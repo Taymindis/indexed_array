@@ -121,6 +121,12 @@ Every struct have to be pre-allocated and value setted before push into binary a
 * free the result set
 * arg0=result set
 
+###### void bin_array_clear(bin_array_t *a, free_node_fn free_node_fn)
+* it is clear all the value but still remaining the array schema and indexed, for the purpose of reload/reset the data.
+* arg0=root array
+* arg1=free node function, to create a free node function to free the node when destroy array
+* return nothing
+
 ###### void bin_array_destroy(bin_array_t *a, free_node_fn free_node_fn)
 * it is destrying the root array
 * arg0=root array

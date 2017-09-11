@@ -217,6 +217,22 @@ bin_array_create(bin_u_int size, bin_u_int num_of_index)
 }
 
 void
+bin_array_clear(bin_array_t *a, free_node_fn free_node_fn) {
+    int i, j;
+    if (!free_node_fn) free_node_fn = free;
+    for (i = 0; i < a->num_of_index; i++) {
+        bin_array_idx *idx_arr = a->_index_arr_ + i;// * sizeof(bin_array_idx); it is not void ptr, not need adjust by size
+        if (idx_arr->cmp_func) {
+            if (i == 0) {
+                for (j = 0; j < a->size; j++)
+                    free_node_fn((void*) idx_arr->arr_ref[j]);
+            }
+        }
+    }
+    a->size = 0;
+}
+
+void
 bin_array_destroy(bin_array_t *a, free_node_fn free_node_fn) {
     int i, j;
     if (!free_node_fn) free_node_fn = free;

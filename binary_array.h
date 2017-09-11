@@ -91,6 +91,7 @@ typedef struct {
 } bin_array_t;
 
 bin_array_t *bin_array_create(bin_u_int size, bin_u_int num_of_index);
+void bin_array_clear(bin_array_t *a, free_node_fn free_node_fn);
 void bin_array_destroy(bin_array_t *a, free_node_fn free_node_fn);
 int bin_add_index_(bin_array_t *a, bin_u_long offset, idx_cmp_func cmp_func);
 bin_u_char ** get_index_array(bin_array_t *a, bin_u_int index_num);
