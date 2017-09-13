@@ -20,6 +20,28 @@ static inline int cmp_idx_rs_uint(const void * a, const void * b) {
     return (int)( (*(bin_u_int *)a) - (*(bin_u_int *)b) );
 }
 
+#ifndef DISABLE_BA_SWAP
+
+#include <unistd.h>
+#include <pthread.h>
+
+/* this function and struct is run by the thread only */
+typedef struct {
+    bin_array_t *old_a;
+    free_node_fn free_node;
+    unsigned int mic_secs;
+} ba_swapping_t;
+
+void *destroy_old_array_(void *swp) {
+    ba_swapping_t *s = (ba_swapping_t*)swp;
+    usleep(s->mic_secs);
+    bin_array_destroy(s->old_a, s->free_node);
+    __bin_arr_free_fn(swp);    
+    pthread_exit(NULL);
+}
+
+#endif
+
 /*
  * This is reference of bsearch - https://github.com/torvalds/linux/blob/master/lib/bsearch.c
  * but return index, passing struct field as comparison
@@ -155,7 +177,7 @@ basearch_direct_one(const void *key, bin_array_t *a, bin_u_long offset)
 {
     int i;
     bin_array_idx *arr_idx;
-    long asize, index;
+    long asize, lt_ind, gt_ind;
     for (i = 0; i < a->num_of_index; i++) {
         if (a->_index_arr_[i].cmp_func != NULL && a->_index_arr_[i].offset == offset) {
             goto FOUND_INDEX;
@@ -167,10 +189,19 @@ basearch_direct_one(const void *key, bin_array_t *a, bin_u_long offset)
 FOUND_INDEX:
     arr_idx = a->_index_arr_ + i;
     asize = a->size;
-    index = basearch_index_eq_(key, (const bin_u_char**) arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
+    lt_ind = basearch_index_lt_(key, (const bin_u_char**) arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
+    gt_ind = basearch_index_gt_(key, (const bin_u_char**) arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
+    
+    if ( lt_ind >= asize || gt_ind <= 0 || gt_ind - lt_ind < 2) { // means none
+        return NULL;
+    }
 
-    if (index >= 0 && index < asize) {
-        return arr_idx->arr_ref[index];
+    if (lt_ind < 0)
+        lt_ind = 0;
+    else lt_ind++;
+
+    if (lt_ind >= 0 && lt_ind < asize) {
+        return arr_idx->arr_ref[lt_ind];
     }
 
     return NULL;
@@ -252,6 +283,32 @@ bin_array_destroy(bin_array_t *a, free_node_fn free_node_fn) {
     free(a);
 }
 
+#ifndef DISABLE_BA_SWAP
+void
+bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node_fn, unsigned int buffer_time_mic_sec) {
+    ba_swapping_t *swp = malloc(sizeof(ba_swapping_t));
+
+    swp->old_a = *curr;
+    swp->free_node = free_node_fn;
+    swp->mic_secs = buffer_time_mic_sec;
+
+    /***Proceed Hazard Ptr***/
+    *curr = new_a;
+
+    pthread_t swap_th;
+    if (pthread_create(&swap_th, NULL, destroy_old_array_, swp)) {
+
+        fprintf(stderr, "ERROR Swaping array\n");
+        return;
+    }
+
+    if (pthread_detach(swap_th))
+        fprintf(stderr, "thread unable to detach when swapping array!!!\n");
+
+
+}
+#endif
+
 int bin_add_index_(bin_array_t *a, bin_u_long offset, idx_cmp_func cmp_func) {
     if (a && a->num_of_index > 0) {
         int i;
@@ -265,7 +322,7 @@ int bin_add_index_(bin_array_t *a, bin_u_long offset, idx_cmp_func cmp_func) {
         goto ERROR;
     } else {
 ERROR:
-        perror("Running out of index");
+        fprintf(stderr, "Running out of index\n");
         return 0;
     }
 
@@ -290,7 +347,7 @@ bin_array_push(bin_array_t *a, void*  node) {
             bin_array_idx *idx_array = a->_index_arr_ + i; //* sizeof(bin_array_idx); it is not void ptr, not need adjust by size
             bin_u_char **new_arr = realloc(idx_array->arr_ref, (a->capacity * 2) * size_of_ptr);
             if (new_arr == NULL) {
-                perror("unable to rellocate more space...");
+                fprintf(stderr, "unable to rellocate more space...\n");
                 return 0;
             }
             idx_array->arr_ref = new_arr;
@@ -328,7 +385,7 @@ bin_push_rs(bin_array_rs *rs, void* data) {
     if (rs->size >= rs->capacity) {
         bin_u_char** new_rs = __bin_arr_realloc_fn(rs->ptrs , (rs->capacity * 2) * sizeof(bin_u_char*));
         if (new_rs == NULL) {
-            perror("NO more allocated space");
+            fprintf(stderr, "NO more allocated space\n");
             return 0;
         }
         rs->ptrs = new_rs;
@@ -348,7 +405,7 @@ bin_push_rs_n(bin_array_rs *rs, bin_u_int start_ind, bin_u_int width,  bin_u_cha
         size_t ext_size_ = width - (rs->capacity - rs->size);
         bin_u_char** new_rs = __bin_arr_realloc_fn(rs->ptrs , (rs->capacity + ext_size_) * sizeof(bin_u_char*));
         if (new_rs == NULL) {
-            perror("No more allocated space");
+            fprintf(stderr, "No more allocated space\n");
             return 0;
         }
         rs->ptrs = new_rs;

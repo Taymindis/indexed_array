@@ -273,6 +273,83 @@ int main() {
 
     }
 
+
+    /****Safety SWAPPING ARRAY for MULTITHREADING PURPOSE*****/
+    bin_array_t *new_ba = bin_array_create(n, 4);
+    if (bin_add_index(new_ba, my_node, val_f, __def_float_sorted_cmp_func__)
+            && bin_add_index(new_ba, my_node, val, __def_int_sorted_cmp_func__)
+            && bin_add_index(new_ba, my_node, val_cstr, __def_cstr_sorted_cmp_func__)
+            && bin_add_index(new_ba, my_node, val_l, __def_long_sorted_cmp_func__)
+       ) {
+
+        int i;
+        for (i = 0; i < 110; i++) {
+            my_node *s = malloc(sizeof(my_node));
+            s->val_l = sorted_number[i];
+            if (i < 1) {
+                s->val = 5;//i + i + i ;//values[i];
+                s->val_cstr = strdup("ABC");
+                s->val_f = 5.9f;
+            }
+            else if (i < 20) {
+                s->val = 20;//i + i + i ;//values[i];
+                s->val_cstr = strdup("DXD");
+                s->val_f = 40.9f;
+            }
+            else if (i < 30) {
+                s->val = 30;//i + i + i ;//values[i];
+                s->val_cstr = strdup("DXD");
+                s->val_f = 40.9f;
+            }
+            else if (i < 40) {
+                s->val = 40;//i + i + i ;//values[i];
+                s->val_cstr = strdup("DXD");
+                s->val_f = 40.9f;
+            }
+            else if (i < 50) {
+                s->val = 50;//i + i + i ;//values[i];
+                s->val_cstr = strdup("DDD");
+                s->val_f = 50.9f;
+            }
+            else if (i < 60) {
+                s->val = 60;//i + i + i ;//values[i];
+                s->val_cstr = strdup("DDD");
+                s->val_f = 60.9f;
+            }
+            else if (i < 70) {
+                s->val = 70;//i + i + i ;//values[i];
+                s->val_cstr = strdup("DDD");
+                s->val_f = 70.9f;
+            }
+            else if (i < 80) {
+                s->val = 80;//i + i + i ;//values[i];
+                s->val_cstr = strdup("DDD");
+                s->val_f = 80.9f;
+            }
+            else if (i < 90) {
+                s->val = 90;//i + i + i ;//values[i];
+                s->val_cstr = strdup("DDD");
+                s->val_f = 90.9f;
+            }
+            else if (i < 95) {
+                s->val = 100;
+                s->val_cstr = strdup("ZUZ");
+                s->val_f = 109.9f;
+            } else {
+                s->val = 111;
+                s->val_cstr = strdup("ZUZ");
+                s->val_f = 119.9f;
+            }
+            bin_array_push(new_ba, s);
+        }
+    }
+
+    unsigned int buffer_timeMs_to_purge_old_array = 2 * 1000 * 1000;
+    printf("%s\n", "Proceed Array Safety Swapping");
+    bin_array_safety_swap(&bin_a_t, new_ba, free_my_node, buffer_timeMs_to_purge_old_array);
+
+    usleep(buffer_timeMs_to_purge_old_array * 2);
+
     if(bin_a_t != NULL)
         bin_array_destroy(bin_a_t, free_my_node);
 

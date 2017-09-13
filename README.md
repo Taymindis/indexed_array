@@ -133,6 +133,15 @@ Every struct have to be pre-allocated and value setted before push into binary a
 * arg1=free node function, to create a free node function to free the node when destroy array
 * return nothing
 
+
+###### void bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node_fn, unsigned int buffer_time_mic_sec)
+* It is making hazard ptr to swap new array into curr array safety, 
+* arg0=curr array dereference
+* arg1=new array to replace curr array
+* arg2=free node function, to create a free node function to free the node when destroy old array
+* arg3=the buffer time for old array going to be freed, the purpose for current thread may still using old array with specific of time
+* return nothing
+
 ### What is pre-allocated value in the readme
 * it means the value must allocate memory before push into the array. The buffer will keeping the same value until you destroy the array, it will be freed
 
