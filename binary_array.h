@@ -34,33 +34,33 @@ typedef int (*idx_cmp_func)(const void*, const void*);
 typedef void (*free_node_fn)(void*);
 
 static inline int __def_int_sorted_cmp_func__ (const void* a, const void*b) {
-    return ( *(int*)a - * (int*)b );
+    return ( *(const int*)a - * (const int*)b );
 }
 
 static inline int __def_long_sorted_cmp_func__ (const void* a, const void*b) {
-    return ( *(long*)a - * (long*)b );
+    return ( *(const long*)a - * (const long*)b );
 }
 
 static inline int __def_float_sorted_cmp_func__ (const void* a, const void*b) {
-    float aa = *(float*)a, bb = *(float*)b;
+    const float aa = *(const float*)a, bb = *(const float*)b;
     if (aa > bb) return 1;
     if (aa < bb) return -1;
     return 0;
 }
 
 static inline int __def_double_sorted_cmp_func__ (const void* a, const void*b) {
-    double aa = *(double*)a, bb = *(double*)b;
+    const double aa = *(const double*)a, bb = *(const double*)b;
     if (aa > bb) return 1;
     if (aa < bb) return -1;
     return 0;
 }
 
 static inline int __def_char_sorted_cmp_func__ (const void* a, const void*b) {
-    return (int)( *(char*)a - * (char*)b );
+    return (int)( *(const char*)a - * (const char*)b );
 }
 
 static inline int __def_cstr_sorted_cmp_func__(const void *a, const void *b){
-    return strcmp(*(const char **)a, *(const char **)b);
+    return strcmp(*(const char **)(uintptr_t)a, *(const char **)(uintptr_t)b);
 }
 
 static inline int __def_cstr2_sorted_cmp_func__(const void *a, const void *b){
@@ -95,10 +95,10 @@ typedef struct {
 } bin_array_t;
 
 bin_array_t *bin_array_create(bin_u_int size, bin_u_int num_of_index);
-void bin_array_clear(bin_array_t *a, free_node_fn free_node_fn);
-void bin_array_destroy(bin_array_t *a, free_node_fn free_node_fn);
+void bin_array_clear(bin_array_t *a, free_node_fn free_node);
+void bin_array_destroy(bin_array_t *a, free_node_fn free_node);
 #ifndef DISABLE_BA_SWAP
-void bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node_fn, unsigned int buffer_time_mic_sec);
+void bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node, unsigned int buffer_time_mic_sec);
 #endif
 int bin_add_index_(bin_array_t *a, bin_u_long offset, idx_cmp_func cmp_func);
 bin_u_char ** get_index_array(bin_array_t *a, bin_u_int index_num);
@@ -214,7 +214,7 @@ bin_array_init(bin_array_t *array, bin_u_int capacity, bin_u_int num_of_index)
     array->capacity = capacity;
 
     array->_index_arr_ = __bin_arr_malloc_fn(num_of_index * sizeof(bin_array_idx));
-    int i;
+    size_t i;
     for (i = 0; i < num_of_index; i++) {
         array->_index_arr_[i].arr_ref = __bin_arr_malloc_fn(capacity * sizeof(bin_u_char *));
         array->_index_arr_[i].cmp_func = NULL; // init 0 until index added

@@ -17,7 +17,7 @@ long basearch_index_lt_(register const void *key, const bin_u_char **base, size_
 
 
 static inline int cmp_idx_rs_uint(const void * a, const void * b) {
-    return (int)( (*(bin_u_int *)a) - (*(bin_u_int *)b) );
+    return (int)( (*(const bin_u_int *)a) - (*(const bin_u_int *)b) );
 }
 
 #ifndef DISABLE_BA_SWAP
@@ -25,6 +25,7 @@ static inline int cmp_idx_rs_uint(const void * a, const void * b) {
 #include <unistd.h>
 #include <pthread.h>
 
+void *destroy_old_array_(void *swp);
 /* this function and struct is run by the thread only */
 typedef struct {
     bin_array_t *old_a;
@@ -36,7 +37,7 @@ void *destroy_old_array_(void *swp) {
     ba_swapping_t *s = (ba_swapping_t*)swp;
     usleep(s->mic_secs);
     bin_array_destroy(s->old_a, s->free_node);
-    __bin_arr_free_fn(swp);    
+    __bin_arr_free_fn(swp);
     pthread_exit(NULL);
 }
 
@@ -111,7 +112,7 @@ basearch_index_lt_(register const void *key, const bin_u_char **base, size_t num
 bin_array_rs*
 basearch_index(const void *key, bin_array_t *a, bin_u_long offset, bin_idx_condtion cond)
 {
-    int i;
+    size_t i;
     bin_array_idx *arr_idx;
     // long index;
     long asize;
@@ -144,7 +145,7 @@ FOUND_INDEX:
         if (gt_ind >= asize)
             gt_ind = asize;
 
-        bin_u_char **arr_refs = arr_idx->arr_ref;
+        // bin_u_char **arr_refs = arr_idx->arr_ref;
 
         bin_push_rs_n(arr_rs, lt_ind, gt_ind - lt_ind, arr_idx->arr_ref);
 
@@ -153,7 +154,7 @@ FOUND_INDEX:
         asize = a->size;
         index = basearch_index_gt_(key, (const bin_u_char**) arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
         if (index >= 0 && index < asize) {
-            bin_u_char **arr_refs = arr_idx->arr_ref;
+            // bin_u_char **arr_refs = arr_idx->arr_ref;
             bin_push_rs_n(arr_rs, index, asize - index, arr_idx->arr_ref);
         }
         break;
@@ -161,7 +162,7 @@ FOUND_INDEX:
         asize = a->size;
         index = basearch_index_lt_(key, (const bin_u_char**) arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
         if (index >= 0 && index < asize) {
-            bin_u_char **arr_refs = arr_idx->arr_ref;
+            // bin_u_char **arr_refs = arr_idx->arr_ref;
             bin_push_rs_n(arr_rs, 0, index + 1, arr_idx->arr_ref);
         }
         break;
@@ -175,7 +176,7 @@ FOUND_INDEX:
 void*
 basearch_direct_one(const void *key, bin_array_t *a, bin_u_long offset)
 {
-    int i;
+    size_t i;
     bin_array_idx *arr_idx;
     long asize, lt_ind, gt_ind;
     for (i = 0; i < a->num_of_index; i++) {
@@ -191,7 +192,7 @@ FOUND_INDEX:
     asize = a->size;
     lt_ind = basearch_index_lt_(key, (const bin_u_char**) arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
     gt_ind = basearch_index_gt_(key, (const bin_u_char**) arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
-    
+
     if ( lt_ind >= asize || gt_ind <= 0 || gt_ind - lt_ind < 2) { // means none
         return NULL;
     }
@@ -248,15 +249,15 @@ bin_array_create(bin_u_int size, bin_u_int num_of_index)
 }
 
 void
-bin_array_clear(bin_array_t *a, free_node_fn free_node_fn) {
-    int i, j;
-    if (!free_node_fn) free_node_fn = free;
+bin_array_clear(bin_array_t *a, free_node_fn free_node) {
+    size_t i, j;
+    if (!free_node) free_node = free;
     for (i = 0; i < a->num_of_index; i++) {
         bin_array_idx *idx_arr = a->_index_arr_ + i;// * sizeof(bin_array_idx); it is not void ptr, not need adjust by size
         if (idx_arr->cmp_func) {
             if (i == 0) {
                 for (j = 0; j < a->size; j++)
-                    free_node_fn((void*) idx_arr->arr_ref[j]);
+                    free_node((void*) idx_arr->arr_ref[j]);
             }
         }
     }
@@ -264,15 +265,15 @@ bin_array_clear(bin_array_t *a, free_node_fn free_node_fn) {
 }
 
 void
-bin_array_destroy(bin_array_t *a, free_node_fn free_node_fn) {
-    int i, j;
-    if (!free_node_fn) free_node_fn = free;
+bin_array_destroy(bin_array_t *a, free_node_fn free_node) {
+    size_t i, j;
+    if (!free_node) free_node = free;
     for (i = 0; i < a->num_of_index; i++) {
         bin_array_idx *idx_arr = a->_index_arr_ + i;// * sizeof(bin_array_idx); it is not void ptr, not need adjust by size
         if (idx_arr->cmp_func) {
             if (i == 0) {
                 for (j = 0; j < a->size; j++)
-                    free_node_fn((void*) idx_arr->arr_ref[j]);
+                    free_node((void*) idx_arr->arr_ref[j]);
             }
         }
 
@@ -285,11 +286,11 @@ bin_array_destroy(bin_array_t *a, free_node_fn free_node_fn) {
 
 #ifndef DISABLE_BA_SWAP
 void
-bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node_fn, unsigned int buffer_time_mic_sec) {
+bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node_, unsigned int buffer_time_mic_sec) {
     ba_swapping_t *swp = malloc(sizeof(ba_swapping_t));
 
     swp->old_a = *curr;
-    swp->free_node = free_node_fn;
+    swp->free_node = free_node_;
     swp->mic_secs = buffer_time_mic_sec;
 
     /***Proceed Hazard Ptr***/
@@ -311,7 +312,7 @@ bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_
 
 int bin_add_index_(bin_array_t *a, bin_u_long offset, idx_cmp_func cmp_func) {
     if (a && a->num_of_index > 0) {
-        int i;
+        size_t i;
         for (i = 0; i < a->num_of_index; i++) {
             if (a->_index_arr_[i].cmp_func == NULL) {
                 a->_index_arr_[i].offset = offset;
@@ -341,7 +342,7 @@ bin_array_push_idx_ref(bin_array_t *a, void* node) {
 int
 bin_array_push(bin_array_t *a, void*  node) {
     if (a->size == a->capacity) {
-        int i;
+        size_t i;
         size_t size_of_ptr = sizeof(bin_u_char*);
         for (i = 0; i < a->num_of_index; i++) {
             bin_array_idx *idx_array = a->_index_arr_ + i; //* sizeof(bin_array_idx); it is not void ptr, not need adjust by size
