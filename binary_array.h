@@ -63,6 +63,10 @@ static inline int __def_cstr_sorted_cmp_func__(const void *a, const void *b){
     return strcmp(*(const char **)a, *(const char **)b);
 }
 
+static inline int __def_cstr2_sorted_cmp_func__(const void *a, const void *b){
+    return strcmp((const char *)a, (const char *)b);
+}
+
 typedef struct {
     size_t size;
     union {
