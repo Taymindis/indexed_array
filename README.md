@@ -142,6 +142,7 @@ Every struct have to be pre-allocated and value setted before push into binary a
 * arg3=the buffer time for old array going to be freed, the purpose for current thread may still using old array with specific of time
 * return nothing
 
+
 ### What is pre-allocated value in the readme
 * it means the value must allocate memory before push into the array. The buffer will keeping the same value until you destroy the array, it will be freed
 
