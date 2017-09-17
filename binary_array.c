@@ -7,11 +7,11 @@ int bin_push_rs(bin_array_rs *rs, void* data);
 int bin_push_rs_n(bin_array_rs *rs, bin_u_int start_ind, bin_u_int width,  bin_u_char **arr_ref);
 void __union__(bin_array_rs *rs1, bin_array_rs *rs2, bin_array_rs *merged_rs, bool free_after_merge);
 void __intersection__(bin_array_rs *rs1, bin_array_rs *rs2, bin_array_rs *merged_rs, bool free_after_merge);
-long basearch_index_eq_(register const void *key, const bin_u_char **base, size_t num, register bin_u_long offset,
+long basearch_index_eq_(register const void *key, bin_u_char **base, size_t num, register bin_u_long offset,
                         register int (*cmp)(const void *key, const void *elt));
-long basearch_index_gt_(register const void *key, const bin_u_char **base, size_t num, register bin_u_long offset,
+long basearch_index_gt_(register const void *key, bin_u_char **base, size_t num, register bin_u_long offset,
                         register int (*cmp)(const void *key, const void *elt));
-long basearch_index_lt_(register const void *key, const bin_u_char **base, size_t num, register bin_u_long offset,
+long basearch_index_lt_(register const void *key, bin_u_char **base, size_t num, register bin_u_long offset,
                         register int (*cmp)(const void *key, const void *elt));
 
 
@@ -48,7 +48,7 @@ void *destroy_old_array_(void *swp) {
  * but return index, passing struct field as comparison
  */
 long
-basearch_index_eq_(register const void *key, const bin_u_char **base, size_t num, register bin_u_long offset,
+basearch_index_eq_(register const void *key, bin_u_char **base, size_t num, register bin_u_long offset,
                    register int (*cmp)(const void *key, const void *elt)) {
     register int result = 0;
     register size_t mid = 0, i = 0;
@@ -72,7 +72,7 @@ basearch_index_eq_(register const void *key, const bin_u_char **base, size_t num
 }
 
 long
-basearch_index_gt_(register const void *key, const bin_u_char **base, size_t num, register bin_u_long offset,
+basearch_index_gt_(register const void *key, bin_u_char **base, size_t num, register bin_u_long offset,
                    register int (*cmp)(const void *key, const void *elt)) {
     register int result = 0;
     register size_t mid = 0, i = 0;
@@ -91,7 +91,7 @@ basearch_index_gt_(register const void *key, const bin_u_char **base, size_t num
 }
 
 long
-basearch_index_lt_(register const void *key, const bin_u_char **base, size_t num, register bin_u_long offset,
+basearch_index_lt_(register const void *key, bin_u_char **base, size_t num, register bin_u_long offset,
                    register int (*cmp)(const void *key, const void *elt)) {
     register int result = 0;
     register size_t mid = 0, i = 0;
@@ -131,8 +131,8 @@ FOUND_INDEX:
     switch (cond) {
     case bin_idx_eq:
         asize = a->size;
-        lt_ind = basearch_index_lt_(key, (const bin_u_char**) arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
-        gt_ind = basearch_index_gt_(key, (const bin_u_char**) arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
+        lt_ind = basearch_index_lt_(key,  arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
+        gt_ind = basearch_index_gt_(key,  arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
 
         if ( lt_ind >= asize || gt_ind <= 0 || gt_ind - lt_ind < 2) { // means none
             break;
@@ -152,7 +152,7 @@ FOUND_INDEX:
         break;
     case bin_idx_gt:
         asize = a->size;
-        index = basearch_index_gt_(key, (const bin_u_char**) arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
+        index = basearch_index_gt_(key,  arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
         if (index >= 0 && index < asize) {
             // bin_u_char **arr_refs = arr_idx->arr_ref;
             bin_push_rs_n(arr_rs, index, asize - index, arr_idx->arr_ref);
@@ -160,7 +160,7 @@ FOUND_INDEX:
         break;
     case bin_idx_lt:
         asize = a->size;
-        index = basearch_index_lt_(key, (const bin_u_char**) arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
+        index = basearch_index_lt_(key,  arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
         if (index >= 0 && index < asize) {
             // bin_u_char **arr_refs = arr_idx->arr_ref;
             bin_push_rs_n(arr_rs, 0, index + 1, arr_idx->arr_ref);
@@ -190,8 +190,8 @@ basearch_direct_one(const void *key, bin_array_t *a, bin_u_long offset)
 FOUND_INDEX:
     arr_idx = a->_index_arr_ + i;
     asize = a->size;
-    lt_ind = basearch_index_lt_(key, (const bin_u_char**) arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
-    gt_ind = basearch_index_gt_(key, (const bin_u_char**) arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
+    lt_ind = basearch_index_lt_(key,  arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
+    gt_ind = basearch_index_gt_(key,  arr_idx->arr_ref, asize, arr_idx->offset, arr_idx->cmp_func);
 
     if ( lt_ind >= asize || gt_ind <= 0 || gt_ind - lt_ind < 2) { // means none
         return NULL;
@@ -222,7 +222,7 @@ bin_insert(bin_array_t *a, bin_u_char* node, size_t index_num) {
     bin_array_idx *index_arr = a->_index_arr_ + index_num;// * sizeof(bin_array_idx); //it is not void ptr, not need adjust by size
     if (index_arr->cmp_func) {
         long curr_sz = a->size;
-        long index_ptr = basearch_index_eq_(node + index_arr->offset, (const bin_u_char**) index_arr->arr_ref, curr_sz, index_arr->offset, index_arr->cmp_func);
+        long index_ptr = basearch_index_eq_(node + index_arr->offset,  index_arr->arr_ref, curr_sz, index_arr->offset, index_arr->cmp_func);
 
         /** Memmove for overlap destination **/
         memmove(&index_arr->arr_ref[index_ptr + 1], &index_arr->arr_ref[index_ptr], (curr_sz - index_ptr)  * sizeof(bin_u_char*));

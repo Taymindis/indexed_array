@@ -23,6 +23,7 @@ int __fn__ (const void *a, const void *b) {
 // });
 
 void free_my_node(void *a) {
+    printf("%s\n", "free");
     free(((my_node*)a)->val_cstr);
     free(a);
 }
@@ -159,7 +160,7 @@ int main() {
         int search_key9 = 20;
         int search_key10 = 5;
         float search_key4f = 19.9f;
-        char* search_key5c = "ZUZ";
+        char* search_key5c = "DDD";
         long search_key1l = 1864;
         clock_t t;
         t = clock();
@@ -184,7 +185,7 @@ int main() {
         printf("fun() took %f seconds to execute \n", time_taken);
 
         bin_array_rs *rs1 = ba_search_eq(bin_a_t, my_node, val_cstr, &search_key5c);
-        bin_array_rs *rs3 = ba_search_gt(bin_a_t, my_node, val, &search_key3);
+        bin_array_rs *rs3 = ba_search_lt(bin_a_t, my_node, val, &search_key3);
 
         bin_array_rs *rs10;
         rs10 = bin_intersect_rs(rs1, rs3, false);
