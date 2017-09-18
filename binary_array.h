@@ -115,6 +115,9 @@ qsort(__rs__->ptrs, __rs__->size, sizeof(bin_u_char*), __cmp_func__)
 
 /** Result Merging other result **/
 bin_array_rs* bin_array_rs_create(size_t capacity);
+int bin_push_rs(bin_array_rs *rs, void* data);
+int bin_push_rs_n(bin_array_rs *rs, bin_u_int start_ind, bin_u_int width,  bin_u_char **arr_ref);
+bin_array_rs* bin_rs_rm_dup_by(bin_array_rs *rs, idx_cmp_func cmp_func, bool free_after_merge);
 bin_array_rs* bin_union_rs(bin_array_rs *rs1, bin_array_rs *rs2, bool free_after_merge);
 bin_array_rs* bin_intersect_rs(bin_array_rs *rs1, bin_array_rs *rs2, bool free_after_merge);
 bin_array_rs* bin_append_rs(bin_array_rs *rs1, bin_array_rs *rs2, bool free_after_merge);

@@ -15,15 +15,18 @@ typedef struct {
     char val_cstr2[10];
 } my_node;
 
-// int (*sorter)(const void*, const void*) = ({
+
 int __fn__ (const void *a, const void *b) {
     return (*(my_node**)a)->val - (*(my_node**)b)->val;
 }
-// __fn__;
-// });
+
+int cmp_group_func (const void *a, const void *b) {
+    // printf("comparing %s and %s \n", (*(my_node**)a)->val_cstr,(*(my_node**)b)->val_cstr);
+    return strcmp((*(my_node**)a)->val_cstr,(*(my_node**)b)->val_cstr);
+}
 
 void free_my_node(void *a) {
-    printf("%s\n", "free");
+    // printf("%s\n", "free");
     free(((my_node*)a)->val_cstr);
     free(a);
 }
@@ -32,7 +35,7 @@ void dump_rs(bin_array_rs *rs) {
     if (rs != NULL) {
         int i;
         for (i = 0; i < rs->size; i++) {
-            printf("%d\n", ((my_node*) rs->ptrs[i])->val);
+            printf("%d, %s - %ld\n", i, ((my_node*) rs->ptrs[i])->val_cstr, ((my_node*) rs->ptrs[i])->val_l);
         }
     }
 }
@@ -41,7 +44,7 @@ void dump_rs_and_free(bin_array_rs *rs) {
     if (rs != NULL) {
         int i;
         for (i = 0; i < rs->size; i++) {
-            printf("%d - %ld\n", i, ((my_node*) rs->ptrs[i])->val_l);
+            printf("%d, %s - %ld\n", i, ((my_node*) rs->ptrs[i])->val_cstr, ((my_node*) rs->ptrs[i])->val_l);
         }
 
         bin_free_rs(rs);
@@ -162,10 +165,11 @@ int main() {
         float search_key4f = 19.9f;
         char* search_key5c = "DDD";
         long search_key1l = 1864;
+        long search_key12 = 12;
         clock_t t;
         t = clock();
         for (i = 0; i <
-                1//0000000
+                1//00
                 ; i++) {
             bin_array_rs *rs = ba_search_multi_eq10(bin_a_t, my_node, val, &search_key,
                                                     &search_key2, &search_key3, &search_key4, &search_key5, &search_key6, &search_key7,
@@ -183,11 +187,19 @@ int main() {
         double time_taken = ((double)t) / CLOCKS_PER_SEC; // in seconds
 
         printf("fun() took %f seconds to execute \n", time_taken);
+        bin_array_rs *rs4 = ba_search_gt(bin_a_t, my_node, val_l, &search_key12);
+        printf("%s\n", "printing before remove duplicate");
+        dump_rs(rs4);
+        printf("%s\n\n\n", "End printing before remove duplicate");
+        bin_array_rs *rs10 = bin_rs_rm_dup_by(rs4, cmp_group_func, true);
+        printf("%s\n", "printing after remove duplicate");
+        dump_rs_and_free(rs10);
+        printf("%s\n\n\n", "End printing after remove duplicate");
+
+
 
         bin_array_rs *rs1 = ba_search_eq(bin_a_t, my_node, val_cstr, &search_key5c);
         bin_array_rs *rs3 = ba_search_lt(bin_a_t, my_node, val, &search_key3);
-
-        bin_array_rs *rs10;
         rs10 = bin_intersect_rs(rs1, rs3, false);
         dump_rs_and_free(rs10);
 

@@ -3,8 +3,6 @@
 void bin_insert(bin_array_t *a, bin_u_char* node, size_t index_num);
 void bin_array_push_idx_ref(bin_array_t *a, void* node);
 
-int bin_push_rs(bin_array_rs *rs, void* data);
-int bin_push_rs_n(bin_array_rs *rs, bin_u_int start_ind, bin_u_int width,  bin_u_char **arr_ref);
 void __union__(bin_array_rs *rs1, bin_array_rs *rs2, bin_array_rs *merged_rs, bool free_after_merge);
 void __intersection__(bin_array_rs *rs1, bin_array_rs *rs2, bin_array_rs *merged_rs, bool free_after_merge);
 long basearch_index_eq_(register const void *key, bin_u_char **base, size_t num, register bin_u_long offset,
@@ -428,6 +426,26 @@ bin_append_rs(bin_array_rs *rs1, bin_array_rs *rs2, bool free_after_merge) {
         bin_free_rs(rs2);
 
     return rs1;
+}
+
+
+bin_array_rs*
+bin_rs_rm_dup_by(bin_array_rs *rs, idx_cmp_func cmp_func, bool free_after_merge) {
+    size_t i, j, count = 0, size = rs->size;
+    bin_array_rs *group_rs = bin_array_rs_create(size);
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < count; j++) {
+            if (cmp_func(rs->ptrs + i, group_rs->ptrs + j) == 0)
+                break;
+        }
+        if (j == count) {
+            bin_push_rs(group_rs, rs->ptrs[i]);
+            count++;
+        }
+    }
+    if (free_after_merge && rs != NULL)
+        bin_free_rs(rs);
+    return group_rs;
 }
 
 void
