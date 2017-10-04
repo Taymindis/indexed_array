@@ -3,6 +3,7 @@
 #include <time.h>
 #include <string.h>
 #include "binary_array.h"
+#include <unistd.h>
 
 // int values[] = { 3, 5, 1, 1, 5, 8, 4, 2, 99, 7 };
 
@@ -162,7 +163,7 @@ int main() {
         int search_key8 = 111;
         int search_key9 = 20;
         int search_key10 = 5;
-        float search_key4f = 19.9f;
+        // float search_key4f = 19.9f;
         char* search_key5c = "DDD";
         long search_key1l = 1864;
         long search_key12 = 12;
@@ -385,11 +386,11 @@ int main() {
         }
     }
 
-    unsigned int buffer_timeMs_to_purge_old_array = 2 * 1000 * 1000;
+    unsigned int buffer_secs_to_purge_old_array = 2;
     printf("%s\n", "Proceed Array Safety Swapping");
-    bin_array_safety_swap(&bin_a_t, new_ba, free_my_node, buffer_timeMs_to_purge_old_array);
+    bin_array_safety_swap(&bin_a_t, new_ba, free_my_node, buffer_secs_to_purge_old_array);
 
-    usleep(buffer_timeMs_to_purge_old_array * 2);
+    sleep(buffer_secs_to_purge_old_array * 2);
 
     if(bin_a_t != NULL)
         bin_array_destroy(bin_a_t, free_my_node);

@@ -28,12 +28,12 @@ void *destroy_old_array_(void *swp);
 typedef struct {
     bin_array_t *old_a;
     free_node_fn free_node;
-    unsigned int mic_secs;
+    unsigned int secs;
 } ba_swapping_t;
 
 void *destroy_old_array_(void *swp) {
     ba_swapping_t *s = (ba_swapping_t*)swp;
-    usleep(s->mic_secs);
+    sleep(s->secs);
     bin_array_destroy(s->old_a, s->free_node);
     __bin_arr_free_fn(swp);
     pthread_exit(NULL);
@@ -234,7 +234,7 @@ bin_array_create(bin_u_int size, bin_u_int num_of_index)
 {
     bin_array_t *a;
 
-    a = malloc(sizeof(bin_array_t));
+    a = __bin_arr_malloc_fn(sizeof(bin_array_t));
     if (a == NULL) {
         return NULL;
     }
@@ -249,7 +249,7 @@ bin_array_create(bin_u_int size, bin_u_int num_of_index)
 void
 bin_array_clear(bin_array_t *a, free_node_fn free_node) {
     size_t i, j;
-    if (!free_node) free_node = free;
+    if (!free_node) free_node = __bin_arr_free_fn;
     for (i = 0; i < a->num_of_index; i++) {
         bin_array_idx *idx_arr = a->_index_arr_ + i;// * sizeof(bin_array_idx); it is not void ptr, not need adjust by size
         if (idx_arr->cmp_func) {
@@ -265,7 +265,7 @@ bin_array_clear(bin_array_t *a, free_node_fn free_node) {
 void
 bin_array_destroy(bin_array_t *a, free_node_fn free_node) {
     size_t i, j;
-    if (!free_node) free_node = free;
+    if (!free_node) free_node = __bin_arr_free_fn;
     for (i = 0; i < a->num_of_index; i++) {
         bin_array_idx *idx_arr = a->_index_arr_ + i;// * sizeof(bin_array_idx); it is not void ptr, not need adjust by size
         if (idx_arr->cmp_func) {
@@ -275,21 +275,21 @@ bin_array_destroy(bin_array_t *a, free_node_fn free_node) {
             }
         }
 
-        free(idx_arr->arr_ref);
+        __bin_arr_free_fn(idx_arr->arr_ref);
     }
 
-    free(a->_index_arr_);
-    free(a);
+    __bin_arr_free_fn(a->_index_arr_);
+    __bin_arr_free_fn(a);
 }
 
 #ifndef DISABLE_BA_SWAP
 void
-bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node_, unsigned int buffer_time_mic_sec) {
-    ba_swapping_t *swp = malloc(sizeof(ba_swapping_t));
+bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node_, unsigned int buffer_time_sec) {
+    ba_swapping_t *swp = __bin_arr_malloc_fn(sizeof(ba_swapping_t));
 
     swp->old_a = *curr;
     swp->free_node = free_node_;
-    swp->mic_secs = buffer_time_mic_sec;
+    swp->secs = buffer_time_sec;
 
     /***Proceed Hazard Ptr***/
     *curr = new_a;
@@ -344,7 +344,7 @@ bin_array_push(bin_array_t *a, void*  node) {
         size_t size_of_ptr = sizeof(bin_u_char*);
         for (i = 0; i < a->num_of_index; i++) {
             bin_array_idx *idx_array = a->_index_arr_ + i; //* sizeof(bin_array_idx); it is not void ptr, not need adjust by size
-            bin_u_char **new_arr = realloc(idx_array->arr_ref, (a->capacity * 2) * size_of_ptr);
+            bin_u_char **new_arr = __bin_arr_realloc_fn(idx_array->arr_ref, (a->capacity * 2) * size_of_ptr);
             if (new_arr == NULL) {
                 fprintf(stderr, "unable to rellocate more space...\n");
                 return 0;
