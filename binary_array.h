@@ -219,10 +219,10 @@ bin_array_init(bin_array_t *array, bin_u_int capacity, bin_u_int num_of_index)
     array->size = 0;
     array->capacity = capacity;
 
-    array->_index_arr_ = __bin_arr_malloc_fn(num_of_index * sizeof(bin_array_idx));
+    array->_index_arr_ =(bin_array_idx *) __bin_arr_malloc_fn(num_of_index * sizeof(bin_array_idx));
     size_t i;
     for (i = 0; i < num_of_index; i++) {
-        array->_index_arr_[i].arr_ref = __bin_arr_malloc_fn(capacity * sizeof(bin_u_char *));
+        array->_index_arr_[i].arr_ref = (bin_u_char **) __bin_arr_malloc_fn(capacity * sizeof(bin_u_char *));
         array->_index_arr_[i].cmp_func = NULL; // init 0 until index added
         array->_index_arr_[i].offset = -1; // init -1 until index added
         if (array->_index_arr_[i].arr_ref == NULL)
