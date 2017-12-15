@@ -284,7 +284,7 @@ bin_array_destroy(bin_array_t *a, free_node_fn free_node) {
 
 #ifndef DISABLE_BA_SWAP
 void
-bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node_, unsigned int buffer_time_sec) {
+bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node_, unsigned int buffer_time_sec, int async) {
     ba_swapping_t *swp = __bin_arr_malloc_fn(sizeof(ba_swapping_t));
 
     swp->old_a = *curr;
@@ -301,9 +301,14 @@ bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_
         return;
     }
 
-    if (pthread_detach(swap_th))
-        fprintf(stderr, "thread unable to detach when swapping array!!!\n");
-
+    if (async) {
+        if (pthread_detach(swap_th))
+            fprintf(stderr, "thread unable to detach when swapping array!!!\n");
+    } else {
+        if (pthread_join(swap_th, NULL) != 0) {
+            fprintf(stderr, "thread unable to join when swapping array!!!\n");
+        }
+    }
 
 }
 #endif
