@@ -89,7 +89,6 @@ typedef struct {
 } bin_array_idx;
 
 typedef struct {
-    void  *pool;
     bin_u_int   size;
     bin_u_int   capacity;
 
