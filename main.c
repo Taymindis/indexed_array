@@ -194,7 +194,20 @@ int main() {
         printf("%s\n\n\n", "End printing before remove duplicate");
         bin_array_rs *rs10 = bin_rs_rm_dup_by(rs4, cmp_group_func, true);
         printf("%s\n", "printing after remove duplicate");
+        
+
+        printf("%s\n", "Dump rs10 without Sorting string");
+        dump_rs(rs10);
+
+        printf("%s\n", "Dump rs10 With Sorting String");
+        bin_sort_rs(rs10, my_node, val_cstr, 1);
+        dump_rs(rs10);
+
+
+        printf("%s\n", "Dump rs10 With Sorting String Desc");
+        bin_sort_rs_desc(rs10, my_node, val_cstr, 1);
         dump_rs_and_free(rs10);
+
         printf("%s\n\n\n", "End printing after remove duplicate");
 
 

@@ -62,11 +62,11 @@ static inline int __def_char_sorted_cmp_func__ (const void* a, const void*b) {
     return (int)( *(const char*)a - * (const char*)b );
 }
 
-static inline int __def_cstr_sorted_cmp_func__(const void *a, const void *b){
+static inline int __def_cstr_sorted_cmp_func__(const void *a, const void *b) {
     return strcmp(*(const char **)(uintptr_t)a, *(const char **)(uintptr_t)b);
 }
 
-static inline int __def_cstr2_sorted_cmp_func__(const void *a, const void *b){
+static inline int __def_cstr2_sorted_cmp_func__(const void *a, const void *b) {
     return strcmp((const char *)a, (const char *)b);
 }
 
@@ -125,9 +125,109 @@ bin_array_rs* bin_intersect_rs(bin_array_rs *rs1, bin_array_rs *rs2, bool free_a
 bin_array_rs* bin_append_rs(bin_array_rs *rs1, bin_array_rs *rs2, bool free_after_merge);
 void bin_free_rs(bin_array_rs *rs);
 
+/** Result Sorting Asc and Desc **/
+#ifdef __APPLE__
+#define bin_sort_rs(__rs__, __struct_type__, __field__, __is_string_data_type__) ({\
+if(__is_string_data_type__){\
+int (^__f__)() = ^int(const void *a, const void *b){\
+__struct_type__ *__a__ = *(__struct_type__**)a;\
+__struct_type__ *__b__ = *(__struct_type__**)b;\
+return strcmp((const char*)(uintptr_t)__a__->__field__, (const char*)(uintptr_t)__b__->__field__);\
+};\
+qsort_b(__rs__->ptrs, __rs__->size, sizeof(bin_u_char*), __f__);\
+}else{\
+int (^__f__)() = ^int(const void *a, const void *b){\
+__struct_type__ *__a__ = *(__struct_type__**)a;\
+__struct_type__ *__b__ = *(__struct_type__**)b;\
+if (__a__->__field__ > __b__->__field__) return 1;\
+if (__a__->__field__ < __b__->__field__) return -1;\
+return 0;\
+};\
+qsort_b(__rs__->ptrs, __rs__->size, sizeof(bin_u_char*), __f__);\
+}\
+})
+
+#define bin_sort_rs_desc(__rs__, __struct_type__, __field__, __is_string_data_type__) ({\
+if(__is_string_data_type__){\
+int (^__f__)() = ^int(const void *a, const void *b){\
+__struct_type__ *__a__ = *(__struct_type__**)b;\
+__struct_type__ *__b__ = *(__struct_type__**)a;\
+return strcmp((const char*)(uintptr_t)__a__->__field__, (const char*)(uintptr_t)__b__->__field__);\
+};\
+qsort_b(__rs__->ptrs, __rs__->size, sizeof(bin_u_char*), __f__);\
+}else{\
+int (^__f__)() = ^int(const void *a, const void *b){\
+__struct_type__ *__a__ = *(__struct_type__**)b;\
+__struct_type__ *__b__ = *(__struct_type__**)a;\
+if (__a__->__field__ > __b__->__field__) return 1;\
+if (__a__->__field__ < __b__->__field__) return -1;\
+return 0;\
+};\
+qsort_b(__rs__->ptrs, __rs__->size, sizeof(bin_u_char*), __f__);\
+}\
+})
+#else // Linux OS or windows os
+#define bin_sort_rs(__rs__, __struct_type__, __field__, __is_string_data_type__) ({\
+if(__is_string_data_type__){\
+int (*__f__)(const void *a, const void *b) =\
+({\
+int __fn__ (const void *a, const void *b) {\
+__struct_type__ *__a__ = *(__struct_type__**)a;\
+__struct_type__ *__b__ = *(__struct_type__**)b;\
+return strcmp((const char*)(uintptr_t)__a__->__field__, (const char*)(uintptr_t)__b__->__field__);\
+}\
+__fn__;\
+});\
+qsort(__rs__->ptrs, __rs__->size, sizeof(bin_u_char*), __f__);\
+}else{\
+int (*__f__)(const void *a, const void *b) =\
+({\
+int __fn__ (const void *a, const void *b) {\
+__struct_type__ *__a__ = *(__struct_type__**)a;\
+__struct_type__ *__b__ = *(__struct_type__**)b;\
+if (__a__->__field__ > __b__->__field__) return 1;\
+if (__a__->__field__ < __b__->__field__) return -1;\
+return 0;\
+}\
+__fn__;\
+});\
+qsort(__rs__->ptrs, __rs__->size, sizeof(bin_u_char*), __f__);\
+}\
+})
+
+#define bin_sort_rs_desc(__rs__, __struct_type__, __field__, __is_string_data_type__) ({\
+if(__is_string_data_type__){\
+int (*__f__)(const void *a, const void *b) =\
+({\
+int __fn__ (const void *a, const void *b) {\
+__struct_type__ *__a__ = *(__struct_type__**)b;\
+__struct_type__ *__b__ = *(__struct_type__**)a;\
+return strcmp((const char*)(uintptr_t)__a__->__field__, (const char*)(uintptr_t)__b__->__field__);\
+}\
+__fn__;\
+});\
+qsort(__rs__->ptrs, __rs__->size, sizeof(bin_u_char*), __f__);\
+}else{\
+int (*__f__)(const void *a, const void *b) =\
+({\
+int __fn__ (const void *a, const void *b) {\
+__struct_type__ *__a__ = *(__struct_type__**)b;\
+__struct_type__ *__b__ = *(__struct_type__**)a;\
+if (__a__->__field__ > __b__->__field__) return 1;\
+if (__a__->__field__ < __b__->__field__) return -1;\
+return 0;\
+}\
+__fn__;\
+});\
+qsort(__rs__->ptrs, __rs__->size, sizeof(bin_u_char*), __f__);\
+}\
+})
+
+#endif
+/** End Result Sorting Acs And Desc **/
 
 
-void* basearch_direct_one(const void *key,bin_array_t *a, bin_u_long offset);
+void* basearch_direct_one(const void *key, bin_array_t *a, bin_u_long offset);
 bin_array_rs* basearch_index(const void *key, bin_array_t *a, bin_u_long offset, bin_idx_condtion cond);
 
 
@@ -218,7 +318,7 @@ bin_array_init(bin_array_t *array, bin_u_int capacity, bin_u_int num_of_index)
     array->size = 0;
     array->capacity = capacity;
 
-    array->_index_arr_ =(bin_array_idx *) __bin_arr_malloc_fn(num_of_index * sizeof(bin_array_idx));
+    array->_index_arr_ = (bin_array_idx *) __bin_arr_malloc_fn(num_of_index * sizeof(bin_array_idx));
     size_t i;
     for (i = 0; i < num_of_index; i++) {
         array->_index_arr_[i].arr_ref = (bin_u_char **) __bin_arr_malloc_fn(capacity * sizeof(bin_u_char *));
