@@ -100,7 +100,7 @@ bin_array_t *bin_array_create(bin_u_int size, bin_u_int num_of_index);
 void bin_array_clear(bin_array_t *a, free_node_fn free_node);
 void bin_array_destroy(bin_array_t *a, free_node_fn free_node);
 #ifndef DISABLE_BA_SWAP
-void bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node, unsigned int buffer_time_sec, int async);
+void bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node, unsigned int buffer_time_sec);
 #endif
 int bin_add_index_(bin_array_t *a, bin_u_long offset, idx_cmp_func cmp_func);
 bin_u_char ** get_index_array(bin_array_t *a, bin_u_int index_num);

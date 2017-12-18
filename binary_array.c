@@ -1,4 +1,6 @@
 #include "binary_array.h"
+#include <unistd.h>
+
 
 void bin_insert(bin_array_t *a, bin_u_char* node, size_t index_num);
 void bin_array_push_idx_ref(bin_array_t *a, void* node);
@@ -18,28 +20,27 @@ static inline int cmp_idx_rs_uint(const void * a, const void * b) {
     return (int)( (*(const bin_u_int *)a) - (*(const bin_u_int *)b) );
 }
 
-#ifndef DISABLE_BA_SWAP
+// #ifndef DISABLE_BA_SWAP
 
-#include <unistd.h>
-#include <pthread.h>
+// #include <pthread.h>
 
-void *destroy_old_array_(void *swp);
-/* this function and struct is run by the thread only */
-typedef struct {
-    bin_array_t *old_a;
-    free_node_fn free_node;
-    unsigned int secs;
-} ba_swapping_t;
+// void *destroy_old_array_(void *swp);
+// /* this function and struct is run by the thread only */
+// typedef struct {
+//     bin_array_t *old_a;
+//     free_node_fn free_node;
+//     unsigned int secs;
+// } ba_swapping_t;
 
-void *destroy_old_array_(void *swp) {
-    ba_swapping_t *s = (ba_swapping_t*)swp;
-    sleep(s->secs);
-    bin_array_destroy(s->old_a, s->free_node);
-    __bin_arr_free_fn(swp);
-    pthread_exit(NULL);
-}
+// void *destroy_old_array_(void *swp) {
+//     ba_swapping_t *s = (ba_swapping_t*)swp;
+//     sleep(s->secs);
+//     bin_array_destroy(s->old_a, s->free_node);
+//     __bin_arr_free_fn(swp);
+//     pthread_exit(NULL);
+// }
 
-#endif
+// #endif
 
 /*
  * This is reference of bsearch - https://github.com/torvalds/linux/blob/master/lib/bsearch.c
@@ -284,31 +285,12 @@ bin_array_destroy(bin_array_t *a, free_node_fn free_node) {
 
 #ifndef DISABLE_BA_SWAP
 void
-bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node_, unsigned int buffer_time_sec, int async) {
-    ba_swapping_t *swp = __bin_arr_malloc_fn(sizeof(ba_swapping_t));
-
-    swp->old_a = *curr;
-    swp->free_node = free_node_;
-    swp->secs = buffer_time_sec;
-
+bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node_, unsigned int milisecs) {
     /***Proceed Hazard Ptr***/
+    bin_array_t *old_a = *curr;
     *curr = new_a;
-
-    pthread_t swap_th;
-    if (pthread_create(&swap_th, NULL, destroy_old_array_, swp)) {
-
-        fprintf(stderr, "ERROR Swaping array\n");
-        return;
-    }
-
-    if (async) {
-        if (pthread_detach(swap_th))
-            fprintf(stderr, "thread unable to detach when swapping array!!!\n");
-    } else {
-        if (pthread_join(swap_th, NULL) != 0) {
-            fprintf(stderr, "thread unable to join when swapping array!!!\n");
-        }
-    }
+    usleep(milisecs * 1000);
+    bin_array_destroy(old_a, free_node_);
 
 }
 #endif

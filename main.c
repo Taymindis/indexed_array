@@ -399,11 +399,11 @@ int main() {
         }
     }
 
-    unsigned int buffer_secs_to_purge_old_array = 2;
+    unsigned int buffer_milisecs_to_purge_old_array = 2000;
     printf("%s\n", "Proceed Array Safety Swapping");
-    bin_array_safety_swap(&bin_a_t, new_ba, free_my_node, buffer_secs_to_purge_old_array, 0);
+    bin_array_safety_swap(&bin_a_t, new_ba, free_my_node, buffer_milisecs_to_purge_old_array);
 
-    // sleep(buffer_secs_to_purge_old_array * 2);
+    // sleep(buffer_milisecs_to_purge_old_array * 2);
 
     if(bin_a_t != NULL)
         bin_array_destroy(bin_a_t, free_my_node);
