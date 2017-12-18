@@ -1,5 +1,5 @@
 #include "binary_array.h"
-#include <unistd.h>
+#include <time.h>
 
 
 void bin_insert(bin_array_t *a, bin_u_char* node, size_t index_num);
@@ -289,7 +289,12 @@ bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_
     /***Proceed Hazard Ptr***/
     bin_array_t *old_a = *curr;
     *curr = new_a;
-    usleep(milisecs * 1000);
+    
+    struct timespec req = {0};
+    req.tv_sec = 0;
+    req.tv_nsec = milisecs * 1000000L;  
+    nanosleep(&req, (struct timespec *)NULL);
+
     bin_array_destroy(old_a, free_node_);
 
 }
