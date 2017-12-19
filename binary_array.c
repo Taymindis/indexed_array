@@ -288,7 +288,11 @@ void
 bin_array_safety_swap(bin_array_t **curr, bin_array_t *new_a, free_node_fn free_node_, unsigned int milisecs) {
     /***Proceed Hazard Ptr***/
     bin_array_t *old_a = *curr;
-    *curr = new_a;
+
+    while(!__sync_bool_compare_and_swap(curr, old_a, new_a)) {
+        old_a = *curr;
+    }
+    // *curr = new_a;
 
 #ifdef __APPLE__
     usleep(milisecs * 1000);
