@@ -1,4 +1,4 @@
-# binary_array
+# indexed_array
 Binary Array is a struct array for your to add index for struct field member and it can be binary search
 When the field been indexed, it will auto sorted while inserting new node, please make sure the field has value pre-allocated memory.
 
@@ -14,7 +14,7 @@ Every struct have to be pre-allocated and value setted before push into binary a
 
 ### Sample of Testing
 - goto root directory
-- gcc binary_array.c main.c -otest
+- gcc indexed_array.c main.c -otest
 - ./test
 
 ### API document
