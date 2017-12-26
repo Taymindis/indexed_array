@@ -116,7 +116,7 @@ basearch_index_by_func(const char *key, idx_array_t *a, idxarr_u_long offset, id
 
 FOUND_INDEX:
     arr_idx = a->_index_arr_ + i ; // * sizeof(idxarr_array_idx); it is not void/char ptr, not need adjust by size
-    long index, lt_ind, gt_ind;
+    long lt_ind, gt_ind;
     asize = a->size;
 
     __idxarr_args_with_meta__ key_arg;
