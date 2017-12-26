@@ -2,7 +2,7 @@
 
 #include <time.h>
 #include <string.h>
-#include "binary_array.h"
+#include "indexed_array.h"
 #include <unistd.h>
 
 // int values[] = { 3, 5, 1, 1, 5, 8, 4, 2, 99, 7 };
@@ -23,7 +23,7 @@ int __fn__ (const void *a, const void *b) {
 
 int cmp_group_func (const void *a, const void *b) {
     // printf("comparing %s and %s \n", (*(my_node**)a)->val_cstr,(*(my_node**)b)->val_cstr);
-    return strcmp((*(my_node**)a)->val_cstr,(*(my_node**)b)->val_cstr);
+    return strcmp((*(my_node**)a)->val_cstr, (*(my_node**)b)->val_cstr);
 }
 
 void free_my_node(void *a) {
@@ -32,26 +32,24 @@ void free_my_node(void *a) {
     free(a);
 }
 
-void dump_rs(bin_array_rs *rs) {
-    if (rs != NULL) {
-        int i;
-        for (i = 0; i < rs->size; i++) {
-            printf("%d, %s - %ld\n", i, ((my_node*) rs->ptrs[i])->val_cstr, ((my_node*) rs->ptrs[i])->val_l);
-        }
-    }
-}
+#define dump_rs(_idxarr_rs_, __struct_type__, __field__, fmt)({\
+if (_idxarr_rs_ != NULL) {\
+int i;\
+for (i = 0; i < _idxarr_rs_->size; i++) {\
+printf(fmt, (((__struct_type__*) _idxarr_rs_->ptrs[i])->__field__));\
+}\
+}\
+})
 
-void dump_rs_and_free(bin_array_rs *rs) {
-    if (rs != NULL) {
-        int i;
-        for (i = 0; i < rs->size; i++) {
-            printf("%d, %s - %ld\n", i, ((my_node*) rs->ptrs[i])->val_cstr, ((my_node*) rs->ptrs[i])->val_l);
-        }
-
-        bin_free_rs(rs);
-    }
-}
-
+#define dump_rs_and_free(_idxarr_rs_, __struct_type__, __field__, fmt)({\
+if (_idxarr_rs_ != NULL) {\
+int i;\
+for (i = 0; i < _idxarr_rs_->size; i++) {\
+printf(fmt, (((__struct_type__*) _idxarr_rs_->ptrs[i])->__field__));\
+}\
+idxarr_free_rs(_idxarr_rs_);\
+}\
+})
 
 long sorted_number[] = {
     12, 38, 45, 48, 57, 72, 84, 91, 110, 116, 119, 125, 133, 135, 151, 168, 172, 188, 190, 218,
@@ -66,93 +64,93 @@ int main() {
 
     int n = 50;
 
-    bin_array_t *bin_a_t = bin_array_create(n, 5);
-    if (bin_add_index(bin_a_t, my_node, val_f, __def_float_sorted_cmp_func__)
-            && bin_add_index(bin_a_t, my_node, val, __def_int_sorted_cmp_func__)
-            && bin_add_index(bin_a_t, my_node, val_cstr, __def_cstr_sorted_cmp_func__)
-            && bin_add_index(bin_a_t, my_node, val_cstr2, __def_cstr2_sorted_cmp_func__)
-            && bin_add_index(bin_a_t, my_node, val_l, __def_long_sorted_cmp_func__)
+    idx_array_t *my_indexed_arr = idxarr_create(n, 5);
+    if (idxarr_add_float_index(my_indexed_arr, my_node, val_f)
+            && idxarr_add_int_index(my_indexed_arr, my_node, val)
+            && idxarr_add_heap_str_index(my_indexed_arr, my_node, val_cstr)
+            && idxarr_add_stack_str_index(my_indexed_arr, my_node, val_cstr2)
+            && idxarr_add_long_index(my_indexed_arr, my_node, val_l)
        ) {
-
         int i;
         for (i = 0; i < 110; i++) {
             my_node *s = malloc(sizeof(my_node));
             s->val_l = sorted_number[i];
             if (i < 1) {
                 s->val = 5;//i + i + i ;//values[i];
-                s->val_cstr = strdup("ABC");                
-                strcpy(s->val_cstr2, "BBB");
+                s->val_cstr = strdup("JOHN");
+                strcpy(s->val_cstr2, "HEBE");
                 s->val_f = 5.9f;
             }
             else if (i < 20) {
                 s->val = 20;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DXD");
-                strcpy(s->val_cstr2, "XXX");
+                s->val_cstr = strdup("BETTY");
+                strcpy(s->val_cstr2, "Vivi");
 
                 s->val_f = 40.9f;
             }
             else if (i < 30) {
                 s->val = 30;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DXD");                
-                strcpy(s->val_cstr2, "WWW");
+                s->val_cstr = strdup("RALF Ken");
+                strcpy(s->val_cstr2, "WAWA");
 
                 s->val_f = 40.9f;
             }
             else if (i < 40) {
                 s->val = 40;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DXD");                
-                strcpy(s->val_cstr2, "TTT");
+                s->val_cstr = strdup("Kent");
+                strcpy(s->val_cstr2, "Casy");
                 s->val_f = 40.9f;
             }
             else if (i < 50) {
                 s->val = 50;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");                
-                strcpy(s->val_cstr2, "MMM");
+                s->val_cstr = strdup("LES");
+                strcpy(s->val_cstr2, "Kaka");
                 s->val_f = 50.9f;
             }
             else if (i < 60) {
                 s->val = 60;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");                
-                strcpy(s->val_cstr2, "NNN");
+                s->val_cstr = strdup("AB JIM");
+                strcpy(s->val_cstr2, "Nano Pin");
                 s->val_f = 60.9f;
             }
             else if (i < 70) {
                 s->val = 70;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");                
-                strcpy(s->val_cstr2, "RRRR");
+                s->val_cstr = strdup("Abbar");
+                strcpy(s->val_cstr2, "Rachel");
                 s->val_f = 70.9f;
             }
             else if (i < 80) {
                 s->val = 80;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");                
-                strcpy(s->val_cstr2, "ERR");
+                s->val_cstr = strdup("Shawn");
+                strcpy(s->val_cstr2, "Nina");
                 s->val_f = 80.9f;
             }
             else if (i < 90) {
                 s->val = 90;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");                
-                strcpy(s->val_cstr2, "VZX");
+                s->val_cstr = strdup("SEAN");
+                strcpy(s->val_cstr2, "Ember");
                 s->val_f = 90.9f;
             }
             else if (i < 95) {
                 s->val = 100;
-                s->val_cstr = strdup("ZUZ");                
-                strcpy(s->val_cstr2, "ZZE");
+                s->val_cstr = strdup("Bob");
+                strcpy(s->val_cstr2, "Abby");
                 s->val_f = 109.9f;
             } else {
                 s->val = 111;
-                s->val_cstr = strdup("ZUZ");                
-                strcpy(s->val_cstr2, "ZUU");
+                s->val_cstr = strdup("GENUS");
+                strcpy(s->val_cstr2, "Gigi");
                 s->val_f = 119.9f;
             }
-            bin_array_push(bin_a_t, s);
+            idxarr_array_push(my_indexed_arr, s);
         }
-        // my_node **ss = (my_node**)get_index_array(bin_a_t, 2);
-        // for (i = 0; i < 100; i++) {
-        //     printf("Sequence index is %s\n", ss[i]->val_cstr);
-        // }
-        //    my_node node;
-        //    node.val = 5;
+
+        printf("%s\n", "Simply get a list of ordered index");
+        my_node **ss = (my_node**)idxarr_get_index_array(my_indexed_arr, 2);
+        for (i = 0; i < my_indexed_arr->size; i++) {
+            printf("Sequence index is %s\n", ss[i]->val_cstr);
+        }
+
         int search_key = 41;
         int search_key2 = 50;
         int search_key3 = 91;
@@ -172,59 +170,51 @@ int main() {
         for (i = 0; i <
                 1//00
                 ; i++) {
-            bin_array_rs *rs = ba_search_multi_eq10(bin_a_t, my_node, val, &search_key,
+            idx_array_rs *rs = idxarr_search_multi_eq10(my_indexed_arr, my_node, val, &search_key,
                                                     &search_key2, &search_key3, &search_key4, &search_key5, &search_key6, &search_key7,
                                                     &search_key8, &search_key9 , &search_key10 );
-
-//            if (rs != NULL) {
-//                int i;
-            // dump_rs_and_free(rs);
-            bin_free_rs(rs);
-
-//            }
-
+            dump_rs(rs, my_node, val, "%d\n");
+            idxarr_free_rs(rs);
         }
         t = clock() - t;
         double time_taken = ((double)t) / CLOCKS_PER_SEC; // in seconds
-
         printf("fun() took %f seconds to execute \n", time_taken);
-        bin_array_rs *rs4 = ba_search_gt(bin_a_t, my_node, val_l, &search_key12);
+        idx_array_rs *rs4 = idxarr_search_gt(my_indexed_arr, my_node, val_l, &search_key12);
         printf("%s\n", "printing before remove duplicate");
-        dump_rs(rs4);
+        dump_rs(rs4, my_node, val_cstr, "%s\n");
         printf("%s\n\n\n", "End printing before remove duplicate");
-        bin_array_rs *rs10 = bin_rs_rm_dup_by(rs4, cmp_group_func, true);
+        idx_array_rs *rs10 = idxarr_rs_rm_dup_by(rs4, cmp_group_func, true);
         printf("%s\n", "printing after remove duplicate");
-        
+
 
         printf("%s\n", "Dump rs10 without Sorting string");
-        dump_rs(rs10);
+        dump_rs(rs10, my_node, val_cstr, "%s\n");
 
         printf("%s\n", "Dump rs10 With Sorting String");
-        bin_sort_rs(rs10, my_node, val_cstr, 1);
-        dump_rs(rs10);
+        idxarr_sort_rs(rs10, my_node, val_cstr, 1);
+        dump_rs(rs10, my_node, val_cstr, "%s\n");
 
 
         printf("%s\n", "Dump rs10 With Sorting String Desc");
-        bin_sort_rs_desc(rs10, my_node, val_cstr, 1);
-        dump_rs_and_free(rs10);
+        idxarr_sort_rs_desc(rs10, my_node, val_cstr, 1);
+        dump_rs_and_free(rs10, my_node, val_cstr, "%s\n");
 
         printf("%s\n\n\n", "End printing after remove duplicate");
 
 
 
-        bin_array_rs *rs1 = ba_search_eq(bin_a_t, my_node, val_cstr, &search_key5c);
-        bin_array_rs *rs3 = ba_search_lt(bin_a_t, my_node, val, &search_key3);
-        rs10 = bin_intersect_rs(rs1, rs3, false);
-        dump_rs_and_free(rs10);
+        idx_array_rs *rs1 = idxarr_search_eq(my_indexed_arr, my_node, val_cstr, search_key5c);
+        idx_array_rs *rs3 = idxarr_search_lt(my_indexed_arr, my_node, val, &search_key3);
+        rs10 = idxarr_intersect_rs(rs1, rs3, false);
+        dump_rs_and_free(rs10, my_node, val_cstr, "%s\n");
 
-        rs10 = bin_union_rs(rs1, rs3, true);
-        dump_rs_and_free(rs10);
-
+        rs10 = idxarr_union_rs(rs1, rs3, true);
+        dump_rs_and_free(rs10, my_node, val_cstr, "%s\n");
 
         printf("%s\n", "Direct search pointer location...");
 
-        /* Do not free the result if you are using search_one, it will be free when you destroy the array */
-        void *found = ba_search_one(bin_a_t, my_node, val_l, &search_key1l);
+        //     /* Do not free the result if you are using search_one, it will be free when you destroy the array */
+        void *found = idxarr_search_one(my_indexed_arr, my_node, val_l, &search_key1l);
 
         if (found != NULL) {
             printf("%s\n", "Found");
@@ -235,87 +225,89 @@ int main() {
             printf("%f\n", found_node->val_f);
         }
 
-        // Clear the current data set
-        bin_array_clear(bin_a_t, free_my_node);
-
-
-        printf("Now the array value bean cleared and size is %zu, reseting the data\n", bin_a_t->size);
+        //     // Clear the current data set
+        idxarr_array_clear(my_indexed_arr, free_my_node);
+        printf("Now the array value bean cleared and size is %zu, reseting the data\n", my_indexed_arr->size);
 
         for (i = 0; i < 110; i++) {
             my_node *s = malloc(sizeof(my_node));
             s->val_l = sorted_number[i];
             if (i < 1) {
                 s->val = 5;//i + i + i ;//values[i];
-                s->val_cstr = strdup("ABC");                
-                strcpy(s->val_cstr2, "BBB");
+                s->val_cstr = strdup("JOHN");
+                strcpy(s->val_cstr2, "HEBE");
                 s->val_f = 5.9f;
             }
             else if (i < 20) {
                 s->val = 20;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DXD");
-                strcpy(s->val_cstr2, "XXX");
+                s->val_cstr = strdup("BETTY");
+                strcpy(s->val_cstr2, "Vivi");
 
                 s->val_f = 40.9f;
             }
             else if (i < 30) {
                 s->val = 30;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DXD");                
-                strcpy(s->val_cstr2, "WWW");
+                s->val_cstr = strdup("RALF Ken");
+                strcpy(s->val_cstr2, "WAWA");
 
                 s->val_f = 40.9f;
             }
             else if (i < 40) {
                 s->val = 40;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DXD");                
-                strcpy(s->val_cstr2, "TTT");
+                s->val_cstr = strdup("Kent");
+                strcpy(s->val_cstr2, "Casy");
                 s->val_f = 40.9f;
             }
             else if (i < 50) {
                 s->val = 50;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");                
-                strcpy(s->val_cstr2, "MMM");
+                s->val_cstr = strdup("LES");
+                strcpy(s->val_cstr2, "Kaka");
                 s->val_f = 50.9f;
             }
             else if (i < 60) {
                 s->val = 60;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");                
-                strcpy(s->val_cstr2, "NNN");
+                s->val_cstr = strdup("AB JIM");
+                strcpy(s->val_cstr2, "Nano Pin");
                 s->val_f = 60.9f;
             }
             else if (i < 70) {
                 s->val = 70;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");                
-                strcpy(s->val_cstr2, "RRRR");
+                s->val_cstr = strdup("Abbar");
+                strcpy(s->val_cstr2, "Rachel");
                 s->val_f = 70.9f;
             }
             else if (i < 80) {
                 s->val = 80;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");                
-                strcpy(s->val_cstr2, "ERR");
+                s->val_cstr = strdup("Shawn");
+                strcpy(s->val_cstr2, "Nina");
                 s->val_f = 80.9f;
             }
             else if (i < 90) {
                 s->val = 90;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");                
-                strcpy(s->val_cstr2, "VZX");
+                s->val_cstr = strdup("SEAN");
+                strcpy(s->val_cstr2, "Ember");
                 s->val_f = 90.9f;
             }
             else if (i < 95) {
                 s->val = 100;
-                s->val_cstr = strdup("ZUZ");                
-                strcpy(s->val_cstr2, "ZZE");
+                s->val_cstr = strdup("Bob");
+                strcpy(s->val_cstr2, "Abby");
                 s->val_f = 109.9f;
             } else {
                 s->val = 111;
-                s->val_cstr = strdup("ZUZ");                
-                strcpy(s->val_cstr2, "ZUU");
+                s->val_cstr = strdup("GENUS");
+                strcpy(s->val_cstr2, "Gigi");
                 s->val_f = 119.9f;
             }
-            bin_array_push(bin_a_t, s);
+            idxarr_array_push(my_indexed_arr, s);
         }
+        found = idxarr_search_one(my_indexed_arr, my_node, val_l, &search_key1l);
 
+        char* search_key111c = "TTT";
 
-        found = ba_search_one(bin_a_t, my_node, val_l, &search_key1l);
+        idx_array_rs *rsxx = idxarr_search_eq(my_indexed_arr, my_node, val_cstr2, search_key111c);
+
+        dump_rs_and_free(rsxx, my_node, val_cstr2, "%s\n");
 
         if (found != NULL) {
             printf("%s\n", "Found After data reset again");
@@ -326,88 +318,98 @@ int main() {
             printf("%f\n", found_node->val_f);
         }
 
-    }
 
+        // /****Safety SWAPPING ARRAY for MULTITHREADING PURPOSE*****/
+        idx_array_t *new_ba = idxarr_create(n, 5);
+        if (idxarr_add_float_index(new_ba, my_node, val_f)
+                && idxarr_add_int_index(new_ba, my_node, val)
+                && idxarr_add_heap_str_index(new_ba, my_node, val_cstr)
+                && idxarr_add_long_index(new_ba, my_node, val_l)
+           ) {
+            int i;
+            for (i = 0; i < 110; i++) {
+                my_node *s = malloc(sizeof(my_node));
+                s->val_l = sorted_number[i];
+                if (i < 1) {
+                    s->val = 5;//i + i + i ;//values[i];
+                    s->val_cstr = strdup("JOHN");
+                    strcpy(s->val_cstr2, "HEBE");
+                    s->val_f = 5.9f;
+                }
+                else if (i < 20) {
+                    s->val = 20;//i + i + i ;//values[i];
+                    s->val_cstr = strdup("BETTY");
+                    strcpy(s->val_cstr2, "Vivi");
 
-    /****Safety SWAPPING ARRAY for MULTITHREADING PURPOSE*****/
-    bin_array_t *new_ba = bin_array_create(n, 4);
-    if (bin_add_index(new_ba, my_node, val_f, __def_float_sorted_cmp_func__)
-            && bin_add_index(new_ba, my_node, val, __def_int_sorted_cmp_func__)
-            && bin_add_index(new_ba, my_node, val_cstr, __def_cstr_sorted_cmp_func__)
-            && bin_add_index(new_ba, my_node, val_l, __def_long_sorted_cmp_func__)
-       ) {
+                    s->val_f = 40.9f;
+                }
+                else if (i < 30) {
+                    s->val = 30;//i + i + i ;//values[i];
+                    s->val_cstr = strdup("RALF Ken");
+                    strcpy(s->val_cstr2, "WAWA");
 
-        int i;
-        for (i = 0; i < 110; i++) {
-            my_node *s = malloc(sizeof(my_node));
-            s->val_l = sorted_number[i];
-            if (i < 1) {
-                s->val = 5;//i + i + i ;//values[i];
-                s->val_cstr = strdup("ABC");
-                s->val_f = 5.9f;
+                    s->val_f = 40.9f;
+                }
+                else if (i < 40) {
+                    s->val = 40;//i + i + i ;//values[i];
+                    s->val_cstr = strdup("Kent");
+                    strcpy(s->val_cstr2, "Casy");
+                    s->val_f = 40.9f;
+                }
+                else if (i < 50) {
+                    s->val = 50;//i + i + i ;//values[i];
+                    s->val_cstr = strdup("LES");
+                    strcpy(s->val_cstr2, "Kaka");
+                    s->val_f = 50.9f;
+                }
+                else if (i < 60) {
+                    s->val = 60;//i + i + i ;//values[i];
+                    s->val_cstr = strdup("AB JIM");
+                    strcpy(s->val_cstr2, "Nano Pin");
+                    s->val_f = 60.9f;
+                }
+                else if (i < 70) {
+                    s->val = 70;//i + i + i ;//values[i];
+                    s->val_cstr = strdup("Abbar");
+                    strcpy(s->val_cstr2, "Rachel");
+                    s->val_f = 70.9f;
+                }
+                else if (i < 80) {
+                    s->val = 80;//i + i + i ;//values[i];
+                    s->val_cstr = strdup("Shawn");
+                    strcpy(s->val_cstr2, "Nina");
+                    s->val_f = 80.9f;
+                }
+                else if (i < 90) {
+                    s->val = 90;//i + i + i ;//values[i];
+                    s->val_cstr = strdup("SEAN");
+                    strcpy(s->val_cstr2, "Ember");
+                    s->val_f = 90.9f;
+                }
+                else if (i < 95) {
+                    s->val = 100;
+                    s->val_cstr = strdup("Bob");
+                    strcpy(s->val_cstr2, "Abby");
+                    s->val_f = 109.9f;
+                } else {
+                    s->val = 111;
+                    s->val_cstr = strdup("GENUS");
+                    strcpy(s->val_cstr2, "Gigi");
+                    s->val_f = 119.9f;
+                }
+                idxarr_array_push(new_ba, s);
             }
-            else if (i < 20) {
-                s->val = 20;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DXD");
-                s->val_f = 40.9f;
-            }
-            else if (i < 30) {
-                s->val = 30;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DXD");
-                s->val_f = 40.9f;
-            }
-            else if (i < 40) {
-                s->val = 40;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DXD");
-                s->val_f = 40.9f;
-            }
-            else if (i < 50) {
-                s->val = 50;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");
-                s->val_f = 50.9f;
-            }
-            else if (i < 60) {
-                s->val = 60;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");
-                s->val_f = 60.9f;
-            }
-            else if (i < 70) {
-                s->val = 70;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");
-                s->val_f = 70.9f;
-            }
-            else if (i < 80) {
-                s->val = 80;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");
-                s->val_f = 80.9f;
-            }
-            else if (i < 90) {
-                s->val = 90;//i + i + i ;//values[i];
-                s->val_cstr = strdup("DDD");
-                s->val_f = 90.9f;
-            }
-            else if (i < 95) {
-                s->val = 100;
-                s->val_cstr = strdup("ZUZ");
-                s->val_f = 109.9f;
-            } else {
-                s->val = 111;
-                s->val_cstr = strdup("ZUZ");
-                s->val_f = 119.9f;
-            }
-            bin_array_push(new_ba, s);
         }
+        unsigned int buffer_milisecs_to_purge_old_array = 500;
+        printf("%s\n", "Proceed Array Safety Swapping");
+        idxarr_array_safety_swap(&my_indexed_arr, new_ba, free_my_node, buffer_milisecs_to_purge_old_array);
+
+        char* search_keyStartWith = "S";
+        idx_array_rs *rs111 = idxarr_search_str_start_with(my_indexed_arr, my_node, val_cstr, search_keyStartWith);
+        dump_rs_and_free(rs111, my_node, val_cstr, "%s\n");
     }
-
-    unsigned int buffer_milisecs_to_purge_old_array = 2000;
-    printf("%s\n", "Proceed Array Safety Swapping");
-    bin_array_safety_swap(&bin_a_t, new_ba, free_my_node, buffer_milisecs_to_purge_old_array);
-
-    // sleep(buffer_milisecs_to_purge_old_array * 2);
-
-    if(bin_a_t != NULL)
-        bin_array_destroy(bin_a_t, free_my_node);
-
+    if (my_indexed_arr != NULL)
+        idxarr_array_destroy(my_indexed_arr, free_my_node);
 
 
     return (0);
