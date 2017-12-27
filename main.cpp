@@ -413,6 +413,10 @@ int main() {
         char* search_keyStartWith = "S";
         idx_array_rs *rs111 = idxarr_search_str_start_with(my_indexed_arr, my_node, val_cstr, search_keyStartWith);
         dump_rs_and_free(rs111, my_node, val_cstr, "%s\n");
+        
+        search_keyStartWith = "G";
+        rs111 = idxarr_search_str_start_with(my_indexed_arr, my_node, val_cstr, search_keyStartWith);
+        dump_rs_and_free(rs111, my_node, val_cstr, "%s\n");
     }
     if (my_indexed_arr != NULL)
         idxarr_destroy(my_indexed_arr, free_my_node);

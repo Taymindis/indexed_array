@@ -171,8 +171,8 @@ int main() {
                 1//00
                 ; i++) {
             idx_array_rs *rs = idxarr_search_multi_eq10(my_indexed_arr, my_node, val, &search_key,
-                                                    &search_key2, &search_key3, &search_key4, &search_key5, &search_key6, &search_key7,
-                                                    &search_key8, &search_key9 , &search_key10 );
+                               &search_key2, &search_key3, &search_key4, &search_key5, &search_key6, &search_key7,
+                               &search_key8, &search_key9 , &search_key10 );
             dump_rs(rs, my_node, val, "%d\n");
             idxarr_free_rs(rs);
         }
@@ -406,6 +406,9 @@ int main() {
 
         char* search_keyStartWith = "S";
         idx_array_rs *rs111 = idxarr_search_str_start_with(my_indexed_arr, my_node, val_cstr, search_keyStartWith);
+        dump_rs_and_free(rs111, my_node, val_cstr, "%s\n");
+        search_keyStartWith = "G";
+        rs111 = idxarr_search_str_start_with(my_indexed_arr, my_node, val_cstr, search_keyStartWith);
         dump_rs_and_free(rs111, my_node, val_cstr, "%s\n");
     }
     if (my_indexed_arr != NULL)
