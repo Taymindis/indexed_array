@@ -745,7 +745,6 @@ idx_array_rs *__rs2__ = idxarr_search_multi_eq9(__a__, __struct_type__, __field_
 idx_array_rs *__rs10__ = idxarr_union_rs(__rs1__, __rs2__, true);\
 __rs10__;})
 
-
 /*** End for multiple eq query scope ***/
 
 static inline int

@@ -2,6 +2,7 @@
 g++ -std=c++11 indexed_array.c main.cpp
 clang++ -std=c++11 indexed_array.c main.cpp
 ***/
+
 #ifdef __cplusplus
 extern "C" {
 #endif

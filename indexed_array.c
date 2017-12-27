@@ -13,7 +13,6 @@ static inline int cmp_idx_rs_uint(const void * a, const void * b) {
 }
 
 // #ifndef DISABLE_BA_SWAP
-
 // #include <pthread.h>
 
 // void *destroy_old_array_(void *swp);
@@ -31,7 +30,6 @@ static inline int cmp_idx_rs_uint(const void * a, const void * b) {
 //     __idxarr_free_fn(swp);
 //     pthread_exit(NULL);
 // }
-
 // #endif
 
 /*
