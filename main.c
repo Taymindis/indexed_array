@@ -142,7 +142,7 @@ int main() {
                 strcpy(s->val_cstr2, "Gigi");
                 s->val_f = 119.9f;
             }
-            idxarr_array_push(my_indexed_arr, s);
+            idxarr_push(my_indexed_arr, s);
         }
 
         printf("%s\n", "Simply get a list of ordered index");
@@ -226,7 +226,7 @@ int main() {
         }
 
         //     // Clear the current data set
-        idxarr_array_clear(my_indexed_arr, free_my_node);
+        idxarr_clear(my_indexed_arr, free_my_node);
         printf("Now the array value bean cleared and size is %zu, reseting the data\n", my_indexed_arr->size);
 
         for (i = 0; i < 110; i++) {
@@ -299,7 +299,7 @@ int main() {
                 strcpy(s->val_cstr2, "Gigi");
                 s->val_f = 119.9f;
             }
-            idxarr_array_push(my_indexed_arr, s);
+            idxarr_push(my_indexed_arr, s);
         }
         found = idxarr_search_one(my_indexed_arr, my_node, val_l, &search_key1l);
 
@@ -397,19 +397,19 @@ int main() {
                     strcpy(s->val_cstr2, "Gigi");
                     s->val_f = 119.9f;
                 }
-                idxarr_array_push(new_ba, s);
+                idxarr_push(new_ba, s);
             }
         }
         unsigned int buffer_milisecs_to_purge_old_array = 500;
         printf("%s\n", "Proceed Array Safety Swapping");
-        idxarr_array_safety_swap(&my_indexed_arr, new_ba, free_my_node, buffer_milisecs_to_purge_old_array);
+        idxarr_safety_swap(&my_indexed_arr, new_ba, free_my_node, buffer_milisecs_to_purge_old_array);
 
         char* search_keyStartWith = "S";
         idx_array_rs *rs111 = idxarr_search_str_start_with(my_indexed_arr, my_node, val_cstr, search_keyStartWith);
         dump_rs_and_free(rs111, my_node, val_cstr, "%s\n");
     }
     if (my_indexed_arr != NULL)
-        idxarr_array_destroy(my_indexed_arr, free_my_node);
+        idxarr_destroy(my_indexed_arr, free_my_node);
 
 
     return (0);

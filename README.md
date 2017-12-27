@@ -23,19 +23,18 @@ Every struct have to be pre-allocated and value setted before push into binary a
 * arg1=number of index will be created
 * return idxarr_array (root_array)
 
-###### int idxarr_add_index(idx_array_t *a, struct_name, field_member, cmp_func);
+###### int idxarr_add_{data_type}_index(idx_array_t *a, struct_name, field_member);
 * arg0=root_array
 * arg1=the struct name
 * arg2=the field name
-* arg3=the cmp_function(built in given, please see demo for details)
 * return 1 if successful, 0 if fail created
 
-###### int idxarr_array_push(idx_array_t *a, void* node);
+###### int idxarr_push(idx_array_t *a, void* node);
 * arg0=root array
 * arg1=pre-allocated node
 * return 1 if successful, 0 if fail pushed
 
-###### int idxarr_array_push_n(idx_array_t *a,  idxarr_u_char* node, idxarr_u_int num)
+###### int idxarr_push_n(idx_array_t *a,  idxarr_u_char* node, idxarr_u_int num)
 * it is push more than 1 elements at one time by given a array node.
 * arg0=root array
 * arg1=pre-allocated node array
@@ -121,20 +120,20 @@ Every struct have to be pre-allocated and value setted before push into binary a
 * free the result set
 * arg0=result set
 
-###### void idxarr_array_clear(idx_array_t *a, free_node_fn free_node_fn)
+###### void idxarr_clear(idx_array_t *a, free_node_fn free_node_fn)
 * it is clear all the value but still remaining the array schema and indexed, for the purpose of reload/reset the data.
 * arg0=root array
 * arg1=free node function, to create a free node function to free the node when destroy array
 * return nothing
 
-###### void idxarr_array_destroy(idx_array_t *a, free_node_fn free_node_fn)
+###### void idxarr_destroy(idx_array_t *a, free_node_fn free_node_fn)
 * it is destrying the root array
 * arg0=root array
 * arg1=free node function, to create a free node function to free the node when destroy array
 * return nothing
 
 
-###### void idxarr_array_safety_swap(idx_array_t **curr, idx_array_t *new_a, free_node_fn free_node_fn, unsigned int buffer_time_mic_sec)
+###### void idxarr_safety_swap(idx_array_t **curr, idx_array_t *new_a, free_node_fn free_node_fn, unsigned int buffer_time_mic_sec)
 * It is making hazard ptr to swap new array into curr array safety, 
 * arg0=curr array dereference
 * arg1=new array to replace curr array

@@ -3,7 +3,7 @@
 
 
 void idxarr_insert(idx_array_t *a, idxarr_u_char* node, size_t index_num);
-void idxarr_array_push_idx_ref(idx_array_t *a, void* node);
+void idxarr_push_idx_ref(idx_array_t *a, void* node);
 
 void __union__(idx_array_rs *rs1, idx_array_rs *rs2, idx_array_rs *merged_rs, bool free_after_merge);
 void __intersection__(idx_array_rs *rs1, idx_array_rs *rs2, idx_array_rs *merged_rs, bool free_after_merge);
@@ -27,7 +27,7 @@ static inline int cmp_idx_rs_uint(const void * a, const void * b) {
 // void *destroy_old_array_(void *swp) {
 //     ba_swapping_t *s = (ba_swapping_t*)swp;
 //     sleep(s->secs);
-//     idxarr_array_destroy(s->old_a, s->free_node);
+//     idxarr_destroy(s->old_a, s->free_node);
 //     __idxarr_free_fn(swp);
 //     pthread_exit(NULL);
 // }
@@ -105,7 +105,7 @@ basearch_index_by_func(const char *key, idx_array_t *a, idxarr_u_long offset, id
     idxarr_array_idx *arr_idx;
     // long index;
     long asize;
-    idx_array_rs *arr_rs = idx_array_rs_create(__DEFAULT_RS_CAPACITY__);
+    idx_array_rs *arr_rs = idxarr_rs_create(__DEFAULT_RS_CAPACITY__);
     for (i = 0; i < a->num_of_index; i++) {
         if (a->_index_arr_[i].cmp_func != NULL && a->_index_arr_[i].offset == offset) {
             goto FOUND_INDEX;
@@ -187,7 +187,7 @@ idxarr_create(idxarr_u_int size, idxarr_u_int num_of_index)
 }
 
 void
-idxarr_array_clear(idx_array_t *a, free_node_fn free_node) {
+idxarr_clear(idx_array_t *a, free_node_fn free_node) {
     size_t i, j;
     if (!free_node) free_node = __idxarr_free_fn;
     for (i = 0; i < a->num_of_index; i++) {
@@ -203,7 +203,7 @@ idxarr_array_clear(idx_array_t *a, free_node_fn free_node) {
 }
 
 void
-idxarr_array_destroy(idx_array_t *a, free_node_fn free_node) {
+idxarr_destroy(idx_array_t *a, free_node_fn free_node) {
     size_t i, j;
     if (!free_node) free_node = __idxarr_free_fn;
     for (i = 0; i < a->num_of_index; i++) {
@@ -224,7 +224,7 @@ idxarr_array_destroy(idx_array_t *a, free_node_fn free_node) {
 
 #ifndef DISABLE_BA_SWAP
 void
-idxarr_array_safety_swap(idx_array_t **curr, idx_array_t *new_a, free_node_fn free_node_, unsigned int milisecs) {
+idxarr_safety_swap(idx_array_t **curr, idx_array_t *new_a, free_node_fn free_node_, unsigned int milisecs) {
     /***Proceed Hazard Ptr***/
     idx_array_t *old_a = *curr;
 
@@ -241,7 +241,7 @@ idxarr_array_safety_swap(idx_array_t **curr, idx_array_t *new_a, free_node_fn fr
     usleep(milisecs * 1000);
 #pragma GCC diagnostic pop
 #endif
-    idxarr_array_destroy(old_a, free_node_);
+    idxarr_destroy(old_a, free_node_);
 
 }
 #endif
@@ -267,7 +267,7 @@ idxarr_array_safety_swap(idx_array_t **curr, idx_array_t *new_a, free_node_fn fr
 
 
 void
-idxarr_array_push_idx_ref(idx_array_t *a, void* node) {
+idxarr_push_idx_ref(idx_array_t *a, void* node) {
     size_t i;
     for (i = 0; i < a->num_of_index; i++) {
         idxarr_insert(a, node, i);
@@ -276,7 +276,7 @@ idxarr_array_push_idx_ref(idx_array_t *a, void* node) {
 
 
 int
-idxarr_array_push(idx_array_t *a, void* node) {
+idxarr_push(idx_array_t *a, void* node) {
     if (a->size == a->capacity) {
         size_t i;
         size_t size_of_ptr = sizeof(idxarr_u_char*);
@@ -291,17 +291,17 @@ idxarr_array_push(idx_array_t *a, void* node) {
         }
         a->capacity *= 2;
     }
-    idxarr_array_push_idx_ref(a, node);
+    idxarr_push_idx_ref(a, node);
     a->size++;
 
     return 1;
 }
 
 int
-idxarr_array_push_n(idx_array_t *a,  idxarr_u_char* node, idxarr_u_int num) {
+idxarr_push_n(idx_array_t *a,  idxarr_u_char* node, idxarr_u_int num) {
     idxarr_u_int i;
     for (i = 0; i < num; i++) {
-        idxarr_array_push(a, (void*) (uintptr_t)node[i]);
+        idxarr_push(a, (void*) (uintptr_t)node[i]);
     }
     a->size += num;
 
@@ -309,7 +309,7 @@ idxarr_array_push_n(idx_array_t *a,  idxarr_u_char* node, idxarr_u_int num) {
 }
 
 idx_array_rs*
-idx_array_rs_create(size_t capacity) {
+idxarr_rs_create(size_t capacity) {
     idx_array_rs *rs = __idxarr_malloc_fn(sizeof(idx_array_rs));
     rs->ptrs = __idxarr_malloc_fn(capacity * sizeof(idxarr_u_char*));
     rs->capacity = capacity;
@@ -370,7 +370,7 @@ idxarr_append_rs(idx_array_rs *rs1, idx_array_rs *rs2, bool free_after_merge) {
 idx_array_rs*
 idxarr_rs_rm_dup_by(idx_array_rs *rs, idxarr_cmp_func cmp_func, bool free_after_merge) {
     size_t i, j, count = 0, size = rs->size;
-    idx_array_rs *group_rs = idx_array_rs_create(size);
+    idx_array_rs *group_rs = idxarr_rs_create(size);
     for (i = 0; i < size; i++) {
         for (j = 0; j < count; j++) {
             if (cmp_func(rs->ptrs + i, group_rs->ptrs + j) == 0)
@@ -400,7 +400,7 @@ idxarr_free_rs(idx_array_rs *rs) {
 
 idx_array_rs*
 idxarr_union_rs(idx_array_rs *rs1, idx_array_rs *rs2, bool free_after_merge) {
-    idx_array_rs *merged_rs = idx_array_rs_create(__DEFAULT_RS_CAPACITY__);
+    idx_array_rs *merged_rs = idxarr_rs_create(__DEFAULT_RS_CAPACITY__);
     __union__(rs1, rs2, merged_rs, free_after_merge);
 
     return merged_rs;
@@ -408,7 +408,7 @@ idxarr_union_rs(idx_array_rs *rs1, idx_array_rs *rs2, bool free_after_merge) {
 
 idx_array_rs*
 idxarr_intersect_rs(idx_array_rs *rs1, idx_array_rs *rs2, bool free_after_merge) {
-    idx_array_rs *merged_rs = idx_array_rs_create(__DEFAULT_RS_CAPACITY__);
+    idx_array_rs *merged_rs = idxarr_rs_create(__DEFAULT_RS_CAPACITY__);
     __intersection__(rs1, rs2, merged_rs, free_after_merge);
 
     return merged_rs;

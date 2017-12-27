@@ -70,83 +70,6 @@ typedef struct {
     size_t klen;
 } __idxarr_args_with_meta__;
 
-
-// static inline int idxarr_DEF_INT_SORTED_CMP_FUNC (const void* a, const void*b) {
-//     return ( *(const int*)a - * (const int*)b );
-// }
-
-// static inline int idxarr_DEF_LONG_SORTED_CMP_FUNC (const void* a, const void*b) {
-//     return ( *(const long*)a - * (const long*)b );
-// }
-
-// static inline int idxarr_DEF_FLOAT_SORTED_CMP_FUNC (const void* a, const void*b) {
-//     const float aa = *(const float*)a, bb = *(const float*)b;
-//     if (aa > bb) return 1;
-//     if (aa < bb) return -1;
-//     return 0;
-// }
-
-// static inline int idxarr_DEF_DOUBLE_SORTED_CMP_FUNC (const void* a, const void*b) {
-//     const double aa = *(const double*)a, bb = *(const double*)b;
-//     if (aa > bb) return 1;
-//     if (aa < bb) return -1;
-//     return 0;
-// }
-
-// static inline int idxarr_DEF_CHAR_SORTED_CMP_FUNC (const void* a, const void*b) {
-//     return (int)( *(const char*)a - * (const char*)b );
-// }
-
-// // For Heap Memory Char Pointer comparison
-// static inline int idxarr_DEF_CSTR_HEAP_SORTED_CMP_FUNC(const void *a, const void *b) {
-//     return strcmp(*(const char **)(uintptr_t)a, *(const char **)(uintptr_t)b);
-// }
-
-// // For Stack Memory char array Comparison e.g. char name[100];
-// static inline int idxarr_DEF_CSTR_STACK_SORTED_CMP_FUNC(const void *a, const void *b) {
-
-//     return strcmp((const char *)a, (const char *)b);
-// }
-
-// // For Heap Memory Char Pointer comparison
-// static inline int idxarr_DEF_CSTR_HEAP_START_WITH(const void *a, const void *b) {
-//     const char *key = *(const char **)(uintptr_t)a;
-//     return strncmp(key, *(const char **)(uintptr_t)b, strlen(key));
-// }
-
-// // For Stack Memory char array Comparison e.g. char name[100];
-// static inline int idxarr_DEF_CSTR_STACK_START_WITH(const void *a, const void *b) {
-//     const char *key = (const char *)a;
-//     return strncmp(key, (const char *)b, strlen(key));
-// }
-static inline int idxarr_DEF_CSTR_HEAP_START_WITH(const void *a, const void *b) {
-    __idxarr_args_with_meta__ *key_arg = (__idxarr_args_with_meta__*)(uintptr_t)a;
-    return strncmp(key_arg->skey, *(const char **)(uintptr_t)b, key_arg->klen);
-}
-
-// For Stack Memory char array Comparison e.g. char name[100];
-static inline int idxarr_DEF_CSTR_STACK_START_WITH(const void *a, const void *b) {
-    __idxarr_args_with_meta__ *key_arg = (__idxarr_args_with_meta__*)(uintptr_t)a;
-    return strncmp(key_arg->skey, (const char *)b, key_arg->klen);
-}
-
-// End with got bug, find the solution again
-// static inline int idxarr_DEF_CSTR_HEAP_END_WITH(const void *key, const void *val) {
-//     const char *key_str = *(const char **)(uintptr_t)key;
-//     char *part_str = strrchr(*(const char **)(uintptr_t)val, 'D');
-//     printf("%s = %s\n", *(const char **)(uintptr_t)val, part_str);
-//     if ( part_str != NULL )
-//         return strcmp(key_str, part_str);
-//     return 1;
-// }
-
-// static inline int idxarr_DEF_CSTR_STACK_END_WITH(const void *key, const void *val) {
-//     char *part_str = strrchr((const char *)val, '.');
-//     if ( part_str != NULL )
-//         return strcmp((const char *)key, part_str);
-//     return -1;
-// }
-
 typedef struct {
     size_t size;
     union {
@@ -175,15 +98,15 @@ typedef struct {
 } idx_array_t;
 
 idx_array_t *idxarr_create(idxarr_u_int size, idxarr_u_int num_of_index);
-void idxarr_array_clear(idx_array_t *a, free_node_fn free_node);
-void idxarr_array_destroy(idx_array_t *a, free_node_fn free_node);
+void idxarr_clear(idx_array_t *a, free_node_fn free_node);
+void idxarr_destroy(idx_array_t *a, free_node_fn free_node);
 #ifndef DISABLE_BA_SWAP
-void idxarr_array_safety_swap(idx_array_t **curr, idx_array_t *new_a, free_node_fn free_node, unsigned int buffer_time_sec);
+void idxarr_safety_swap(idx_array_t **curr, idx_array_t *new_a, free_node_fn free_node, unsigned int buffer_time_sec);
 #endif
 idxarr_u_char ** idxarr_get_index_array(idx_array_t *a, idxarr_u_int index_num);
 
-int idxarr_array_push(idx_array_t *a, void* node);
-int idxarr_array_push_n(idx_array_t *a,  idxarr_u_char* node, idxarr_u_int num);
+int idxarr_push(idx_array_t *a, void* node);
+int idxarr_push_n(idx_array_t *a,  idxarr_u_char* node, idxarr_u_int num);
 
 #ifdef __APPLE__
 #define idxarr_get_int_cmp_func(__struct_type__, __field__)({\
@@ -429,7 +352,7 @@ long basearch_index_lt_(register const void *key, idxarr_u_char **base, size_t n
 idx_array_rs* basearch_index_by_func(const char *key, idx_array_t *a, idxarr_u_long offset, idx_cmp_func cmp_func);
 
 /** Result Merging other result **/
-idx_array_rs* idx_array_rs_create(size_t capacity);
+idx_array_rs* idxarr_rs_create(size_t capacity);
 int idxarr_push_rs(idx_array_rs *rs, void* data);
 int idxarr_push_rs_n(idx_array_rs *rs, idxarr_u_int start_ind, idxarr_u_int width,  idxarr_u_char **arr_ref);
 idx_array_rs* idxarr_rs_rm_dup_by(idx_array_rs *rs, idxarr_cmp_func cmp_func, bool free_after_merge);
@@ -568,7 +491,7 @@ rt;\
 size_t i;\
 idxarr_array_idx *arr_idx;\
 long asize;\
-idx_array_rs *arr_rs = idx_array_rs_create(__DEFAULT_RS_CAPACITY__);\
+idx_array_rs *arr_rs = idxarr_rs_create(__DEFAULT_RS_CAPACITY__);\
 for (i = 0; i < __a__->num_of_index; i++) {\
 if (__a__->_index_arr_[i].cmp_func != NULL && __a__->_index_arr_[i].offset == __offset__) {\
 arr_idx = __a__->_index_arr_ + i;\
