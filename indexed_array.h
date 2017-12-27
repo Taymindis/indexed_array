@@ -43,9 +43,10 @@ static idxarr_realloc_fn __idxarr_realloc_fn = realloc;
 __attribute__((unused))
 static idxarr_free_fn __idxarr_free_fn = free;
 
-#define __idx_is_valid_string__(_idx_elt__) ({_Generic((_idx_elt__),char **: 0,char *: 1,default: 0);})
+#define __idx_is_valid_string__(_idx_elt__) ({ sizeof(*_idx_elt__) == sizeof(char)? 1: 0; })
 
 typedef int (*idxarr_cmp_func)(const void*, const void*);
+
 
 #ifdef __APPLE__
 typedef int (^idx_cmp_func)(const void*, const void*);
@@ -110,7 +111,7 @@ int idxarr_push_n(idx_array_t *a,  idxarr_u_char* node, idxarr_u_int num);
 
 #ifdef __APPLE__
 #define idxarr_get_int_cmp_func(__struct_type__, __field__)({\
-int (^__f__)() = ^int(const void* a, const void *b){\
+idx_cmp_func __f__ = ^int(const void* a, const void *b){\
 int __arg__  =  *(int*)a;\
 __struct_type__ *__b__ = (__struct_type__*)b;\
 if (__arg__ > __b__->__field__) return 1;\
@@ -119,7 +120,7 @@ return 0;\
 };\
 __f__;})
 #define idxarr_get_long_cmp_func(__struct_type__, __field__)({\
-int (^__f__)() = ^int(const void* a, const void *b){\
+idx_cmp_func __f__ = ^int(const void* a, const void *b){\
 long __arg__  =  *(long*)a;\
 __struct_type__ *__b__ = (__struct_type__*)b;\
 if (__arg__ > __b__->__field__) return 1;\
@@ -128,7 +129,7 @@ return 0;\
 };\
 __f__;})
 #define idxarr_get_float_cmp_func(__struct_type__, __field__)({\
-int (^__f__)() = ^int(const void* a, const void *b){\
+idx_cmp_func __f__ = ^int(const void* a, const void *b){\
 float __arg__  =  *(float*)a;\
 __struct_type__ *__b__ = (__struct_type__*)b;\
 if (__arg__ > __b__->__field__) return 1;\
@@ -137,7 +138,7 @@ return 0;\
 };\
 __f__;})
 #define idxarr_get_double_cmp_func(__struct_type__, __field__)({\
-int (^__f__)();\
+idx_cmp_func __f__;\
 __f__ = ^int(const void* a, const void *b){\
 double __arg__  =  *(double*)a;\
 __struct_type__ *__b__ = (__struct_type__*)b;\
@@ -147,7 +148,7 @@ return 0;\
 };\
 __f__;})
 #define idxarr_get_char_cmp_func(__struct_type__, __field__)({\
-int (^__f__)();\
+idx_cmp_func __f__;\
 __f__ = ^int(const void* a, const void *b){\
 char __arg__  =  *(char*)a;\
 __struct_type__ *__b__ = (__struct_type__*)b;\
@@ -157,7 +158,7 @@ return 0;\
 };\
 __f__;})
 #define idxarr_get_str_cmp_func(__struct_type__, __field__)({\
-int (^__f__)();\
+idx_cmp_func __f__;\
 __f__ = ^int(const void* a, const void *b){\
 const char *__arg__  =  (const char *)a;\
 __struct_type__ *__b__ = (__struct_type__*)b;\
@@ -165,8 +166,66 @@ return strcmp(__arg__, __b__->__field__);\
 };\
 __f__;})
 #else
+
+#ifdef __cplusplus
+
 #define idxarr_get_int_cmp_func(__struct_type__, __field__)({\
-int (*__f__)(const void* a, const void *b);\
+idx_cmp_func __f__ = [&](const void*a,const void* b) -> int {\
+int __arg__  =  *(int*)a;\
+__struct_type__ *__b__ = (__struct_type__*)b;\
+if (__arg__ > __b__->__field__) return 1;\
+if (__arg__ < __b__->__field__) return -1;\
+return 0;\
+};\
+__f__;})
+#define idxarr_get_long_cmp_func(__struct_type__, __field__)({\
+idx_cmp_func __f__ = [&](const void*a,const void* b) -> int {\
+long __arg__  =  *(long*)a;\
+__struct_type__ *__b__ = (__struct_type__*)b;\
+if (__arg__ > __b__->__field__) return 1;\
+if (__arg__ < __b__->__field__) return -1;\
+return 0;\
+};\
+__f__;})
+#define idxarr_get_float_cmp_func(__struct_type__, __field__)({\
+idx_cmp_func __f__ = [&](const void*a,const void* b) -> int {\
+float __arg__  =  *(float*)a;\
+__struct_type__ *__b__ = (__struct_type__*)b;\
+if (__arg__ > __b__->__field__) return 1;\
+if (__arg__ < __b__->__field__) return -1;\
+return 0;\
+};\
+__f__;})
+#define idxarr_get_double_cmp_func(__struct_type__, __field__)({\
+idx_cmp_func __f__ = [&](const void*a,const void* b) -> int {\
+double __arg__  =  *(double*)a;\
+__struct_type__ *__b__ = (__struct_type__*)b;\
+if (__arg__ > __b__->__field__) return 1;\
+if (__arg__ < __b__->__field__) return -1;\
+return 0;\
+};\
+__f__;})
+#define idxarr_get_char_cmp_func(__struct_type__, __field__)({\
+idx_cmp_func __f__ = [&](const void*a,const void* b) -> int {\
+char __arg__  =  *(char*)a;\
+__struct_type__ *__b__ = (__struct_type__*)b;\
+if (__arg__ > __b__->__field__) return 1;\
+if (__arg__ < __b__->__field__) return -1;\
+return 0;\
+};\
+__f__;})
+#define idxarr_get_str_cmp_func(__struct_type__, __field__)({\
+idx_cmp_func __f__ = [&](const void*a,const void* b) -> int {\
+const char *__arg__  =  (const char *)a;\
+__struct_type__ *__b__ = (__struct_type__*)b;\
+return strcmp(__arg__, __b__->__field__);\
+};\
+__f__;})
+
+#else// C compiler
+
+#define idxarr_get_int_cmp_func(__struct_type__, __field__)({\
+idx_cmp_func __f__;\
 __f__ =\
 ({\
 int __fn__ (const void* a, const void *b) {\
@@ -180,7 +239,7 @@ __fn__;\
 });\
 __f__;})
 #define idxarr_get_long_cmp_func(__struct_type__, __field__)({\
-int (*__f__)(const void* a, const void *b);\
+idx_cmp_func __f__;\
 __f__ =\
 ({\
 int __fn__ (const void* a, const void *b) {\
@@ -194,7 +253,7 @@ __fn__;\
 });\
 __f__;})
 #define idxarr_get_float_cmp_func(__struct_type__, __field__)({\
-int (*__f__)(const void* a, const void *b);\
+idx_cmp_func __f__;\
 __f__ =\
 ({\
 int __fn__ (const void* a, const void *b) {\
@@ -208,7 +267,7 @@ __fn__;\
 });\
 __f__;})
 #define idxarr_get_double_cmp_func(__struct_type__, __field__)({\
-int (*__f__)(const void* a, const void *b);\
+idx_cmp_func __f__;\
 __f__ =\
 ({\
 int __fn__ (const void* a, const void *b) {\
@@ -222,7 +281,7 @@ __fn__;\
 });\
 __f__;})
 #define idxarr_get_char_cmp_func(__struct_type__, __field__)({\
-int (*__f__)(const void* a, const void *b);\
+idx_cmp_func __f__;\
 __f__ =\
 ({\
 int __fn__ (const void* a, const void *b) {\
@@ -236,7 +295,7 @@ __fn__;\
 });\
 __f__;})
 #define idxarr_get_str_cmp_func(__struct_type__, __field__)({\
-int (*__f__)(const void* a, const void *b);\
+idx_cmp_func __f__;\
 __f__ =\
 ({\
 int __fn__ (const void* a, const void *b) {\
@@ -247,6 +306,8 @@ return strcmp(__arg__, __b__->__field__);\
 __fn__;\
 });\
 __f__;})
+#endif
+
 #endif
 
 #define idxarr_add_int_index(__a__, __struct_type__, __field_member__)({\
@@ -363,16 +424,25 @@ void idxarr_free_rs(idx_array_rs *rs);
 
 /** Result Sorting Asc and Desc **/
 #ifdef __APPLE__
+#define idxarr_search_str_start_with(__a__, __struct_type__, __field_member__, __key__)({\
+assert(__idx_is_valid_string__(__key__) && "please do not need to dereference your string, it is already a pointer.");\
+idx_cmp_func __f__ = ^int(const void *a, const void *b){\
+__idxarr_args_with_meta__ *key_arg = (__idxarr_args_with_meta__*)a;\
+__struct_type__ *__b__ = (__struct_type__*)b;\
+return strncmp(key_arg->skey, __b__->__field_member__, key_arg->klen);\
+};\
+basearch_index_by_func(__key__, __a__, offsetof(__struct_type__, __field_member__), __f__);\
+})
 #define idxarr_sort_rs(__rs__, __struct_type__, __field__, __is_string_data_type__) ({\
 if(__is_string_data_type__){\
-int (^__f__)() = ^int(const void *a, const void *b){\
+idx_cmp_func __f__ = ^int(const void *a, const void *b){\
 __struct_type__ *__a__ = *(__struct_type__**)a;\
 __struct_type__ *__b__ = *(__struct_type__**)b;\
 return strcmp((const char*)(uintptr_t)__a__->__field__, (const char*)(uintptr_t)__b__->__field__);\
 };\
 qsort_b(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __f__);\
 }else{\
-int (^__f__)() = ^int(const void *a, const void *b){\
+idx_cmp_func __f__ = ^int(const void *a, const void *b){\
 __struct_type__ *__a__ = *(__struct_type__**)a;\
 __struct_type__ *__b__ = *(__struct_type__**)b;\
 if (__a__->__field__ > __b__->__field__) return 1;\
@@ -385,14 +455,14 @@ qsort_b(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __f__);\
 
 #define idxarr_sort_rs_desc(__rs__, __struct_type__, __field__, __is_string_data_type__) ({\
 if(__is_string_data_type__){\
-int (^__f__)() = ^int(const void *a, const void *b){\
+idx_cmp_func __f__ = ^int(const void *a, const void *b){\
 __struct_type__ *__a__ = *(__struct_type__**)b;\
 __struct_type__ *__b__ = *(__struct_type__**)a;\
 return strcmp((const char*)(uintptr_t)__a__->__field__, (const char*)(uintptr_t)__b__->__field__);\
 };\
 qsort_b(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __f__);\
 }else{\
-int (^__f__)() = ^int(const void *a, const void *b){\
+idx_cmp_func __f__ = ^int(const void *a, const void *b){\
 __struct_type__ *__a__ = *(__struct_type__**)b;\
 __struct_type__ *__b__ = *(__struct_type__**)a;\
 if (__a__->__field__ > __b__->__field__) return 1;\
@@ -403,9 +473,73 @@ qsort_b(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __f__);\
 }\
 })
 #else // Linux OS or windows os
+#ifdef __cplusplus
+
+#define idxarr_search_str_start_with(__a__, __struct_type__, __field_member__, __key__)({\
+assert(__idx_is_valid_string__(__key__) && "please do not need to dereference your string, it is already a pointer.");\
+idx_cmp_func __f__ = [&](const void*a, const void*b) -> int {\
+__idxarr_args_with_meta__ *key_arg = (__idxarr_args_with_meta__*)a;\
+__struct_type__ *__b__ = (__struct_type__*)b;\
+return strncmp(key_arg->skey, __b__->__field_member__, key_arg->klen);\
+};\
+basearch_index_by_func(__key__, __a__, offsetof(__struct_type__, __field_member__), __f__);\
+})
+
 #define idxarr_sort_rs(__rs__, __struct_type__, __field__, __is_string_data_type__) ({\
 if(__is_string_data_type__){\
-int (*__f__)(const void *a, const void *b) =\
+idx_cmp_func __f__ = [&](const void*a, const void*b) -> int {\
+__struct_type__ *__a__ = *(__struct_type__**)a;\
+__struct_type__ *__b__ = *(__struct_type__**)b;\
+return strcmp((const char*)(uintptr_t)__a__->__field__, (const char*)(uintptr_t)__b__->__field__);\
+};\
+qsort(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __f__);\
+}else{\
+idx_cmp_func __f__ = [&](const void*a, const void*b) -> int {\
+__struct_type__ *__a__ = *(__struct_type__**)a;\
+__struct_type__ *__b__ = *(__struct_type__**)b;\
+if (__a__->__field__ > __b__->__field__) return 1;\
+if (__a__->__field__ < __b__->__field__) return -1;\
+return 0;\
+};\
+qsort(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __f__);\
+}\
+})
+
+#define idxarr_sort_rs_desc(__rs__, __struct_type__, __field__, __is_string_data_type__) ({\
+if(__is_string_data_type__){\
+idx_cmp_func __f__ = [&](const void*a, const void*b) -> int {\
+__struct_type__ *__a__ = *(__struct_type__**)b;\
+__struct_type__ *__b__ = *(__struct_type__**)a;\
+return strcmp((const char*)(uintptr_t)__a__->__field__, (const char*)(uintptr_t)__b__->__field__);\
+};\
+qsort(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __f__);\
+}else{\
+idx_cmp_func __f__ = [&](const void*a, const void*b) -> int {\
+__struct_type__ *__a__ = *(__struct_type__**)b;\
+__struct_type__ *__b__ = *(__struct_type__**)a;\
+if (__a__->__field__ > __b__->__field__) return 1;\
+if (__a__->__field__ < __b__->__field__) return -1;\
+return 0;\
+};\
+qsort(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __f__);\
+}\
+})
+#else// C compiler
+#define idxarr_search_str_start_with(__a__, __struct_type__, __field_member__, __key__)({\
+assert(__idx_is_valid_string__(__key__) && "please do not need to dereference your string, it is already a pointer.");\
+idx_cmp_func __f__ = ({\
+int __fn__ (const void *a, const void *b) {\
+__idxarr_args_with_meta__ *key_arg = (__idxarr_args_with_meta__*)a;\
+__struct_type__ *__b__ = (__struct_type__*)b;\
+return strncmp(key_arg->skey, __b__->__field_member__, key_arg->klen);\
+}\
+__fn__;\
+});\
+basearch_index_by_func(__key__, __a__, offsetof(__struct_type__, __field_member__), __f__);\
+})
+#define idxarr_sort_rs(__rs__, __struct_type__, __field__, __is_string_data_type__) ({\
+if(__is_string_data_type__){\
+idx_cmp_func __f__ =\
 ({\
 int __fn__ (const void *a, const void *b) {\
 __struct_type__ *__a__ = *(__struct_type__**)a;\
@@ -416,7 +550,7 @@ __fn__;\
 });\
 qsort(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __f__);\
 }else{\
-int (*__f__)(const void *a, const void *b) =\
+idx_cmp_func __f__ =\
 ({\
 int __fn__ (const void *a, const void *b) {\
 __struct_type__ *__a__ = *(__struct_type__**)a;\
@@ -433,7 +567,7 @@ qsort(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __f__);\
 
 #define idxarr_sort_rs_desc(__rs__, __struct_type__, __field__, __is_string_data_type__) ({\
 if(__is_string_data_type__){\
-int (*__f__)(const void *a, const void *b) =\
+idx_cmp_func __f__ =\
 ({\
 int __fn__ (const void *a, const void *b) {\
 __struct_type__ *__a__ = *(__struct_type__**)b;\
@@ -444,7 +578,7 @@ __fn__;\
 });\
 qsort(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __f__);\
 }else{\
-int (*__f__)(const void *a, const void *b) =\
+idx_cmp_func __f__ =\
 ({\
 int __fn__ (const void *a, const void *b) {\
 __struct_type__ *__a__ = *(__struct_type__**)b;\
@@ -458,6 +592,8 @@ __fn__;\
 qsort(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __f__);\
 }\
 })
+
+#endif
 
 #endif
 /** End Result Sorting Acs And Desc **/
@@ -549,31 +685,6 @@ basearch_index(__key__, __a__, offsetof(__struct_type__, __field_member__), idxa
 #define idxarr_search_gt(__a__, __struct_type__, __field_member__, __key__)\
 basearch_index(__key__, __a__, offsetof(__struct_type__, __field_member__), idxarr_gt)
 
-
-#ifdef __APPLE__
-#define idxarr_search_str_start_with(__a__, __struct_type__, __field_member__, __key__)({\
-assert(__idx_is_valid_string__(__key__) && "please do not need to dereference your string, it is already a pointer.");\
-int (^__f__)() = ^int(const void *a, const void *b){\
-__idxarr_args_with_meta__ *key_arg = (__idxarr_args_with_meta__*)a;\
-__struct_type__ *__b__ = (__struct_type__*)b;\
-return strncmp(key_arg->skey, __b__->__field_member__, key_arg->klen);\
-};\
-basearch_index_by_func(__key__, __a__, offsetof(__struct_type__, __field_member__), __f__);\
-})
-#else
-#define idxarr_search_str_start_with(__a__, __struct_type__, __field_member__, __key__)({\
-assert(__idx_is_valid_string__(__key__) && "please do not need to dereference your string, it is already a pointer.");\
-int (*__f__)(const void *a, const void *b) = ({\
-int __fn__ (const void *a, const void *b) {\
-__idxarr_args_with_meta__ *key_arg = (__idxarr_args_with_meta__*)a;\
-__struct_type__ *__b__ = (__struct_type__*)b;\
-return strncmp(key_arg->skey, __b__->__field_member__, key_arg->klen);\
-}\
-__fn__;\
-});\
-basearch_index_by_func(__key__, __a__, offsetof(__struct_type__, __field_member__), __f__);\
-})
-#endif
 
 
 

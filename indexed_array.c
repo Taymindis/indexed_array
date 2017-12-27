@@ -174,7 +174,7 @@ idxarr_create(idxarr_u_int size, idxarr_u_int num_of_index)
 {
     idx_array_t *a;
 
-    a = __idxarr_malloc_fn(sizeof(idx_array_t));
+    a =(idx_array_t *) __idxarr_malloc_fn(sizeof(idx_array_t));
     if (a == NULL) {
         return NULL;
     }
@@ -270,7 +270,7 @@ void
 idxarr_push_idx_ref(idx_array_t *a, void* node) {
     size_t i;
     for (i = 0; i < a->num_of_index; i++) {
-        idxarr_insert(a, node, i);
+        idxarr_insert(a, (unsigned char*)node, i);
     }
 }
 
@@ -282,7 +282,7 @@ idxarr_push(idx_array_t *a, void* node) {
         size_t size_of_ptr = sizeof(idxarr_u_char*);
         for (i = 0; i < a->num_of_index; i++) {
             idxarr_array_idx *idx_array = a->_index_arr_ + i; //* sizeof(idxarr_array_idx); it is not void ptr, not need adjust by size
-            idxarr_u_char **new_arr = __idxarr_realloc_fn(idx_array->arr_ref, (a->capacity * 2) * size_of_ptr);
+            idxarr_u_char **new_arr =(idxarr_u_char**) __idxarr_realloc_fn(idx_array->arr_ref, (a->capacity * 2) * size_of_ptr);
             if (new_arr == NULL) {
                 fprintf(stderr, "unable to rellocate more space...\n");
                 return 0;
@@ -310,8 +310,8 @@ idxarr_push_n(idx_array_t *a,  idxarr_u_char* node, idxarr_u_int num) {
 
 idx_array_rs*
 idxarr_rs_create(size_t capacity) {
-    idx_array_rs *rs = __idxarr_malloc_fn(sizeof(idx_array_rs));
-    rs->ptrs = __idxarr_malloc_fn(capacity * sizeof(idxarr_u_char*));
+    idx_array_rs *rs = (idx_array_rs*) __idxarr_malloc_fn(sizeof(idx_array_rs));
+    rs->ptrs = (idxarr_u_char**) __idxarr_malloc_fn(capacity * sizeof(idxarr_u_char*));
     rs->capacity = capacity;
     rs->size = 0;
     return rs;
@@ -320,7 +320,7 @@ idxarr_rs_create(size_t capacity) {
 int
 idxarr_push_rs(idx_array_rs *rs, void* data) {
     if (rs->size >= rs->capacity) {
-        idxarr_u_char** new_rs = __idxarr_realloc_fn(rs->ptrs , (rs->capacity * 2) * sizeof(idxarr_u_char*));
+        idxarr_u_char** new_rs = (idxarr_u_char**) __idxarr_realloc_fn(rs->ptrs , (rs->capacity * 2) * sizeof(idxarr_u_char*));
         if (new_rs == NULL) {
             fprintf(stderr, "NO more allocated space\n");
             return 0;
@@ -329,7 +329,7 @@ idxarr_push_rs(idx_array_rs *rs, void* data) {
         rs->capacity *= 2;
     }
 
-    rs->ptrs[rs->size++] = data;
+    rs->ptrs[rs->size++] = (idxarr_u_char*) data;
 
     return 1;
 
@@ -340,7 +340,7 @@ int
 idxarr_push_rs_n(idx_array_rs *rs, idxarr_u_int start_ind, idxarr_u_int width,  idxarr_u_char **arr_ref) {
     if (rs->size + width > rs->capacity) {
         size_t ext_size_ = width - (rs->capacity - rs->size);
-        idxarr_u_char** new_rs = __idxarr_realloc_fn(rs->ptrs , (rs->capacity + ext_size_) * sizeof(idxarr_u_char*));
+        idxarr_u_char** new_rs =(idxarr_u_char**) __idxarr_realloc_fn(rs->ptrs , (rs->capacity + ext_size_) * sizeof(idxarr_u_char*));
         if (new_rs == NULL) {
             fprintf(stderr, "No more allocated space\n");
             return 0;
