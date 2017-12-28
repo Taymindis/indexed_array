@@ -21,7 +21,6 @@ extern int idxarr_tests_run;
 #include "indexed_array.h"
 #include <unistd.h>
 
-
 /****
 g++ -std=c++11 indexed_array.c test_main.cpp
 valgrind ./a.out // if you have valgrind

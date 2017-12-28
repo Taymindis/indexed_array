@@ -18,7 +18,6 @@ extern int idxarr_tests_run;
 #include "indexed_array.h"
 #include <unistd.h>
 
-
 /****
 gcc indexed_array.c test_main.c
 valgrind ./a.out
