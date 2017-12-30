@@ -1,9 +1,9 @@
 # indexed_array
-Binary Array is a struct array for your to add index for struct field member and it can be binary search
+Index(ed) Array is a struct array for your to add index for struct field member and it can be binary search
 When the field been indexed, it will auto sorted while inserting new node, please make sure the field has value pre-allocated memory.
 
 ## Noted
-Every struct have to be pre-allocated and value setted before push into binary array.
+Every struct have to be pre-allocated and value setted before push into Index(ed) Array.
 
 ### Target Project
 - this lib mostly target for big datatable searching on cache.
