@@ -4,7 +4,9 @@ extern "C" {
 
 #define idxarr_assert(message, test) do { \
 if (!(test)) { \
+printf("\033[0;31m");\
 printf("TEST FAILED at line numer %d, %s\n", __LINE__, message);\
+printf("\033[0m");\
 return 0; \
 } \
 } while (0)
@@ -12,6 +14,9 @@ return 0; \
 #define idxarr_run_test(test) do { \
 idxarr_tests_run++; \
 if(!test()) return 0;\
+printf("\033[0;32m");\
+printf("%s => PASSED\n", #test);\
+printf("\033[0m");\
 } while (0)
 
 extern int idxarr_tests_run;
