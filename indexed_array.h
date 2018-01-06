@@ -406,6 +406,9 @@ status;})
 #define idxarr_sort_rs_by(__rs__, __cmp_func__) \
 qsort(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __cmp_func__)
 
+#define idxarr_sort_rs_by_b(__rs__, __cmp_func__) \
+qsort_b(__rs__->ptrs, __rs__->size, sizeof(idxarr_u_char*), __cmp_func__)
+
 /** Algorithm **/
 long basearch_index_eq_(register const void *key, idxarr_u_char **base, size_t num, register idx_cmp_func cmp);
 long basearch_index_gt_(register const void *key, idxarr_u_char **base, size_t num, register idx_cmp_func cmp);

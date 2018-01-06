@@ -171,7 +171,6 @@ static int test_value_had_indexed() {
         idxarr_assert("Cat should have val 40-49", ss[i]->val >= 40 && ss[i]->val < 50);
     }
 
-
     return 1;
 }
 
@@ -239,6 +238,30 @@ static int test_search_algorithm() {
     rs10 = idxarr_intersect_rs(rs1, idxarr_union_rs(rs1, rs2, false), true);
 
     idxarr_assert("result size should be 10 as join and the union ", rs10->size == 10);
+
+
+
+
+#ifdef __APPLE__
+    idx_cmp_func f = ^int(const void *a, const void *b) {
+        my_node *anode = *(my_node**)a;
+        my_node *bnode = *(my_node**)b;
+        return strcmp((const char*)(uintptr_t)anode->val_cstr, (const char*)(uintptr_t)bnode->val_cstr);
+    };
+
+    idxarr_sort_rs_by_b(rs10, f);
+#else
+    idx_cmp_func f = ({
+        int __fn__ (const void *a, const void *b) {
+            my_node *anode = *(my_node**)a;
+            my_node *bnode = *(my_node**)b;
+            return strcmp((const char*)(uintptr_t)anode->val_cstr, (const char*)(uintptr_t)bnode->val_cstr);
+        }
+        __fn__;
+    });
+
+    idxarr_sort_rs_by(rs10, f);
+#endif
 
     // idxarr_free_rs(rs1);  // rs1 is already free at above
     idxarr_free_rs(rs2);

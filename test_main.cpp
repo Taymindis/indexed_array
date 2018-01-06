@@ -76,7 +76,7 @@ static int setup_test() {
        ) {
         int i;
         for (i = 0; i < 100; i++) {
-            my_node *s =(my_node*) malloc(sizeof(my_node));
+            my_node *s = (my_node*) malloc(sizeof(my_node));
             if (i < 10) {
                 s->val = i;
                 s->val_l = i * 1L;
@@ -242,6 +242,27 @@ static int test_search_algorithm() {
 
     idxarr_assert("result size should be 10 as join and the union ", rs10->size == 10);
 
+
+
+#ifdef __APPLE__
+    idx_cmp_func f = ^int(const void *a, const void *b) {
+        my_node *anode = *(my_node**)a;
+        my_node *bnode = *(my_node**)b;
+        return strcmp((const char*)(uintptr_t)anode->val_cstr, (const char*)(uintptr_t)bnode->val_cstr);
+    };
+
+    idxarr_sort_rs_by_b(rs10, f);
+#else
+    idxarr_cmp_func f = [&](const void*a, const void*b) -> int {
+        my_node *anode = *(my_node**)a;
+        my_node *bnode = *(my_node**)b;
+        return strcmp((const char*)(uintptr_t)anode->val_cstr, (const char*)(uintptr_t)bnode->val_cstr);
+    };
+
+    idxarr_sort_rs_by(rs10, f);
+#endif
+
+
     // idxarr_free_rs(rs1);  // rs1 is already free at above
     idxarr_free_rs(rs2);
     idxarr_free_rs(rs10);
@@ -292,7 +313,7 @@ static int test_reload_data() {
        ) {
         int i;
         for (i = 0; i < 50; i++) {
-            my_node *s =(my_node*) malloc(sizeof(my_node));
+            my_node *s = (my_node*) malloc(sizeof(my_node));
             if (i < 10) {
                 s->val = i;
                 s->val_l = i * 1L;

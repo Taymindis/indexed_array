@@ -110,7 +110,14 @@ Every struct have to be pre-allocated and value setted before push into Index(ed
 * return the result set(idx_array_rs) and need to be free after use, see demo for details 
 
 ###### void idxarr_sort_rs_by(idx_array_rs *rs, cmp_func) 
-* you can resort the result with your customized compare function, .
+* re-sort the result with your customized compare function, .
+* arg0=result set 1
+* arg1=result set 2
+* arg2=boolean to tell whether want to free rs2 after new merged result created
+* return nothing
+
+###### void idxarr_sort_rs_by_b(idx_array_rs *rs, cmp_func) 
+* for Apple Compiler, it can be dynamic block function, re-sort the result with your customized compare function, .
 * arg0=result set 1
 * arg1=result set 2
 * arg2=boolean to tell whether want to free rs2 after new merged result created
